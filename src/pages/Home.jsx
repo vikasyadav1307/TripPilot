@@ -2,6 +2,7 @@ import React from 'react';
 import Hero from '../components/Hero';
 import WhyTripPilot from '../components/WhyTripPilot';
 import ExploreByState from '../components/ExploreByState';
+import Footer from '../components/Footer';
 
 const Home = () => {
   return (
@@ -21,6 +22,11 @@ const Home = () => {
 
       {/* Explore by State (insert after How AI Crafts Your Journey) */}
       <ExploreByState />
+
+      {/* Safe footer wrapper */}
+      <div>
+        <Footer />
+      </div>
     </div>
   );
 };

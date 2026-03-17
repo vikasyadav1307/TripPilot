@@ -1,165 +1,332 @@
 import React, { useState, useEffect } from "react";
 
-const STATE_DATA = {
-  "Uttar Pradesh": ["Taj Mahal", "Varanasi", "Ayodhya", "Lucknow"],
-  Rajasthan: ["Jaipur", "Udaipur", "Jaisalmer", "Mount Abu"],
-  Maharashtra: ["Mumbai", "Pune", "Lonavala", "Ajanta Caves"],
-  Goa: ["Baga Beach", "Calangute", "Anjuna", "Dudhsagar Falls"],
-  Kerala: ["Munnar", "Alleppey", "Kochi", "Wayanad"],
-  "Himachal Pradesh": ["Manali", "Shimla", "Dharamshala", "Spiti Valley"],
-  Uttarakhand: ["Nainital", "Mussoorie", "Rishikesh", "Kedarnath"],
-  Punjab: ["Amritsar", "Golden Temple", "Jalandhar"],
-  Haryana: ["Gurgaon", "Kurukshetra"],
-  Bihar: ["Bodh Gaya", "Nalanda", "Patna"],
-  Jharkhand: ["Ranchi", "Netarhat"],
-  "West Bengal": ["Darjeeling", "Kolkata", "Sundarbans"],
-  Odisha: ["Puri", "Konark Sun Temple", "Bhubaneswar"],
-  Chhattisgarh: ["Chitrakote Falls", "Raipur"],
-  "Madhya Pradesh": ["Khajuraho", "Bhopal", "Indore", "Kanha National Park"],
-  Gujarat: ["Statue of Unity", "Dwarka", "Somnath", "Kutch"],
-  "Andhra Pradesh": ["Tirupati", "Visakhapatnam"],
-  Telangana: ["Hyderabad", "Warangal"],
-  Karnataka: ["Bangalore", "Mysore", "Coorg", "Hampi"],
-  "Tamil Nadu": ["Chennai", "Ooty", "Madurai", "Rameshwaram"],
-  Sikkim: ["Gangtok", "Tsomgo Lake"],
-  Assam: ["Kaziranga National Park", "Guwahati"],
-  "Arunachal Pradesh": ["Tawang", "Ziro Valley"],
-  Nagaland: ["Kohima", "Hornbill Festival"],
-  Manipur: ["Loktak Lake", "Imphal"],
-  Mizoram: ["Aizawl", "Reiek"],
-  Tripura: ["Agartala", "Ujjayanta Palace"],
-  Meghalaya: ["Shillong", "Cherrapunji", "Dawki"],
-};
-
-const images = import.meta.glob("../assets/images/*.{jpg,jpeg,png}", {
+const images = import.meta.glob("../assets/images/*.{jpg,jpeg,png,webp}", {
   eager: true,
 });
 
+const normalize = (value) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
+
 const getImage = (place) => {
-  const formatted = place.toLowerCase().replace(/\s/g, "");
-  const match = Object.keys(images).find((path) =>
-    path.toLowerCase().includes(formatted)
-  );
+  const formatted = normalize(place);
+  const match = Object.keys(images).find((path) => {
+    const fileName = path.split("/").pop() || "";
+    return normalize(fileName).includes(formatted);
+  });
 
   if (!match) {
-    return "https://via.placeholder.com/400x300";
+    return "https://via.placeholder.com/640x420?text=TripPilot";
   }
 
   const mod = images[match];
-  const src =
-    mod && typeof mod === "object" && "default" in mod ? mod.default : mod;
-
-  return src || "https://via.placeholder.com/400x300";
+  const src = mod && typeof mod === "object" && "default" in mod ? mod.default : mod;
+  return src || "https://via.placeholder.com/640x420?text=TripPilot";
 };
 
+const makePlace = (name) => ({
+  name,
+  image: getImage(name),
+});
+
+const statesList = [
+  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
+  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
+  "Uttar Pradesh", "Uttarakhand", "West Bengal",
+];
+
+const STATE_PLACE_NAMES = {
+  "Andhra Pradesh": ["Tirupati", "Visakhapatnam", "Araku Valley"],
+  "Arunachal Pradesh": ["Tawang", "Ziro Valley", "Bomdila"],
+  Assam: ["Kaziranga", "Guwahati", "Majuli"],
+  Bihar: ["Bodh Gaya", "Nalanda", "Patna"],
+  Chhattisgarh: ["Chitrakote", "Raipur", "Bastar"],
+  Goa: ["Baga Beach", "Calangute", "Anjuna", "Dudhsagar Falls"],
+  Gujarat: ["Statue of Unity", "Dwarka", "Somnath", "Kutch"],
+  Haryana: ["Kurukshetra", "Gurgaon", "Panchkula"],
+  "Himachal Pradesh": ["Manali", "Shimla", "Dharamshala", "Spiti Valley"],
+  Jharkhand: ["Ranchi", "Netarhat", "Deoghar"],
+  Karnataka: ["Bangalore", "Mysore", "Coorg", "Hampi"],
+  Kerala: ["Munnar", "Alleppey", "Kochi", "Wayanad"],
+  "Madhya Pradesh": ["Khajuraho", "Bhopal", "Indore", "Kanha"],
+  Maharashtra: ["Mumbai", "Pune", "Lonavala", "Ajanta Caves"],
+  Manipur: ["Loktak", "Imphal", "Ukhrul"],
+  Meghalaya: ["Shillong", "Cherrapunji", "Dawki"],
+  Mizoram: ["Aizawal", "Reiek", "Champhai"],
+  Nagaland: ["Kohima", "Hornbill", "Dzukou Valley"],
+  Odisha: ["Puri", "Konark", "Bhubaneswar"],
+  Punjab: ["Amritsar", "Golden Temple", "Jalandhar"],
+  Rajasthan: ["Jaipur", "Udaipur", "Jaisalmer", "Mount Abu"],
+  Sikkim: ["Gangtok", "Tsomgo Lake", "Pelling"],
+  "Tamil Nadu": ["Chennai", "Ooty", "Madurai", "Rameshwaram"],
+  Telangana: ["Hyderabad", "Warangal", "Bhadrachalam"],
+  Tripura: ["Agartala", "Ujjayanta", "Unakoti"],
+  "Uttar Pradesh": ["Taj Mahal", "Varanasi", "Ayodhya", "Lucknow"],
+  Uttarakhand: ["Nainital", "Mussoorie", "Rishikesh", "Kedarnath"],
+  "West Bengal": ["Darjeeling", "Kolkata", "Sundarbans"],
+};
+
+const PLACES = Object.fromEntries(
+  Object.entries(STATE_PLACE_NAMES).map(([stateName, places]) => [
+    stateName,
+    places.map(makePlace),
+  ])
+);
+
 const ExploreByState = () => {
-  const [state, setState] = useState("");
-  const [destinations, setDestinations] = useState([]);
-  const [visible, setVisible] = useState(false);
+  const [activeState, setActiveState] = useState(statesList[0]);
+  const [destinations, setDestinations] = useState(PLACES[statesList[0]] || []);
+  const [visible, setVisible] = useState(true);
 
   useEffect(() => {
-    if (!state) {
-      return;
-    }
-    // simulate fetch/loading
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVisible(false);
     const t = setTimeout(() => {
-      setVisible(false);
-      setDestinations([]);
-      const t2 = setTimeout(() => {
-        const rawPlaces = STATE_DATA[state] || [];
-        const cards = rawPlaces.map((placeName) => ({
-          name: placeName,
-          desc: `Popular tourist destination in ${state}.`,
-        }));
-        setDestinations(cards);
-        // slight delay to allow CSS transition
-        const t3 = setTimeout(() => setVisible(true), 40);
-        return () => clearTimeout(t3);
-      }, 0);
+      setDestinations(PLACES[activeState] || []);
+      const t2 = setTimeout(() => setVisible(true), 50);
       return () => clearTimeout(t2);
-    }, 0);
-    return () => clearTimeout(t);
-  }, [state]);
+    }, 70);
 
-  const states = Object.keys(STATE_DATA);
+    return () => clearTimeout(t);
+  }, [activeState]);
 
   return (
     <section style={{ background: "linear-gradient(180deg, rgba(30,142,142,0.03), rgba(34,184,165,0.02))", padding: "56px 18px" }}>
-      <div style={{ width: "90%", maxWidth: "1100px", margin: "0 auto", textAlign: "center" }}>
+      <style>{`
+        .explore-state-shell {
+          width: 90%;
+          max-width: 1100px;
+          margin: 0 auto;
+          text-align: center;
+        }
+
+        .explore-state-tabs {
+          display: flex;
+          gap: 10px;
+          overflow-x: auto;
+          padding: 8px 2px 14px;
+          margin-top: 8px;
+          margin-bottom: 26px;
+          scrollbar-width: thin;
+          scroll-behavior: smooth;
+          justify-content: flex-start;
+        }
+
+        .explore-state-tabs::-webkit-scrollbar {
+          height: 7px;
+        }
+
+        .explore-state-tabs::-webkit-scrollbar-thumb {
+          background: rgba(20, 122, 122, 0.28);
+          border-radius: 999px;
+        }
+
+        .state-pill {
+          border: 1px solid rgba(16, 123, 122, 0.24);
+          background: rgba(255, 255, 255, 0.78);
+          color: #185f5f;
+          padding: 10px 16px;
+          border-radius: 999px;
+          font-weight: 700;
+          font-size: 0.9rem;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: all 300ms ease;
+          box-shadow: 0 8px 18px rgba(11, 67, 67, 0.08);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+
+        .state-pill.active {
+          background: linear-gradient(120deg, #178f89, #22b8a5);
+          color: #ffffff;
+          border-color: transparent;
+          box-shadow: 0 12px 24px rgba(23, 143, 137, 0.3);
+        }
+
+        .state-pill:hover {
+          transform: translateY(-2px);
+        }
+
+        .explore-cards-wrap {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 18px;
+          align-items: stretch;
+        }
+
+        .floating-card {
+          position: relative;
+          min-height: 300px;
+          border-radius: 20px;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.4);
+          background: rgba(255, 255, 255, 0.14);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          box-shadow:
+            0 18px 36px rgba(11, 67, 67, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.45);
+          transform: translateY(18px) rotate(var(--tilt));
+          opacity: 0;
+          transition: transform 300ms ease, box-shadow 300ms ease, opacity 300ms ease;
+        }
+
+        .floating-card.show {
+          transform: translateY(0) rotate(var(--tilt));
+          opacity: 1;
+        }
+
+        .floating-card:hover {
+          transform: translateY(-10px) scale(1.03) rotate(0deg) !important;
+          box-shadow:
+            0 28px 52px rgba(11, 67, 67, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .card-bg {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transform: scale(1.02);
+        }
+
+        .card-overlay {
+          position: absolute;
+          inset: auto 0 0;
+          padding: 16px;
+          text-align: left;
+          background: linear-gradient(180deg, rgba(1, 18, 22, 0.08), rgba(1, 18, 22, 0.88));
+          color: #f5ffff;
+        }
+
+        .card-title {
+          margin: 0;
+          font-size: 1.02rem;
+          font-weight: 700;
+        }
+
+        .card-subtitle {
+          margin: 5px 0 12px;
+          font-size: 0.84rem;
+          color: rgba(229, 255, 252, 0.88);
+        }
+
+        .card-btn {
+          border: 0;
+          border-radius: 999px;
+          padding: 8px 14px;
+          background: rgba(34, 184, 165, 0.95);
+          color: #ffffff;
+          font-weight: 700;
+          font-size: 0.8rem;
+          cursor: pointer;
+          box-shadow: 0 6px 16px rgba(34, 184, 165, 0.32);
+          transition: transform 250ms ease, box-shadow 250ms ease;
+        }
+
+        .card-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 10px 20px rgba(34, 184, 165, 0.4);
+        }
+
+        @media (max-width: 1024px) {
+          .explore-cards-wrap {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 820px) {
+          .explore-cards-wrap {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+
+        @media (max-width: 640px) {
+          .explore-state-shell {
+            width: 94%;
+          }
+
+          .explore-cards-wrap {
+            display: flex;
+            overflow-x: auto;
+            gap: 14px;
+            padding-bottom: 8px;
+            scroll-behavior: smooth;
+          }
+
+          .floating-card {
+            min-width: 250px;
+            min-height: 290px;
+            flex: 0 0 auto;
+          }
+        }
+      `}</style>
+
+      <div className="explore-state-shell">
         <h2 style={{ fontSize: "1.75rem", color: "#103333", marginBottom: "12px" }}>Explore by State</h2>
-        <p style={{ color: "#4d7070", marginBottom: "22px" }}>Select a state to discover top destinations and travel highlights.</p>
+        <p style={{ color: "#4d7070", marginBottom: "12px" }}>Pick a state and discover curated destinations with premium travel vibes.</p>
 
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "28px" }}>
-          <label style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-            <span style={{ color: "#2f6b6b", fontWeight: 600 }}>Select a State</span>
-            <select
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              style={{
-                marginTop: "6px",
-                padding: "10px 14px",
-                borderRadius: "10px",
-                border: "1px solid rgba(30,142,142,0.18)",
-                minWidth: "240px",
-                background: "white",
-                color: "#0f3c3c",
-                fontWeight: 600,
-                outline: "none",
-              }}
+        <div className="explore-state-tabs" role="tablist" aria-label="States">
+          {statesList.map((stateName) => (
+            <button
+              key={stateName}
+              type="button"
+              className={`state-pill ${activeState === stateName ? "active" : ""}`}
+              onClick={() => setActiveState(stateName)}
             >
-              <option value="">-- Choose --</option>
-              {states.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-
-        <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", justifyContent: "center" }}>
-          {destinations.map((d, i) => (
-            <div
-              key={d.name}
-              style={{
-                flex: "1 1 30%",
-                minWidth: "260px",
-                maxWidth: "340px",
-                background: "white",
-                borderRadius: "14px",
-                overflow: "hidden",
-                boxShadow: "0 12px 30px rgba(11,67,67,0.06)",
-                transform: visible ? "translateY(0)" : "translateY(12px)",
-                opacity: visible ? 1 : 0,
-                transition: `opacity 420ms ease ${i * 80}ms, transform 420ms cubic-bezier(.2,.9,.2,1) ${i * 80}ms`,
-                display: "flex",
-                flexDirection: "column",
-                textAlign: "left",
-              }}
-            >
-              <div style={{ height: "180px", background: "#eee" }}>
-                <img
-                  src={getImage(d.name)}
-                  alt={d.name}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  onError={(e) => {
-                    e.target.src = "https://via.placeholder.com/400x300";
-                  }}
-                />
-              </div>
-              <div style={{ padding: "16px" }}>
-                <h3 style={{ margin: 0, fontSize: "1.05rem", color: "#103333" }}>{d.name}</h3>
-                <p style={{ marginTop: "8px", color: "#516d6d", fontSize: "0.95rem" }}>{d.desc}</p>
-                <div style={{ marginTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <button style={{ padding: "8px 14px", borderRadius: "10px", border: "none", background: "#22b8a5", color: "white", fontWeight: 600, cursor: "pointer", boxShadow: "0 6px 18px rgba(34,184,165,0.18)" }}>
-                    View Details
-                  </button>
-                  <span style={{ color: "#8aa6a6", fontWeight: 600 }}>{state}</span>
-                </div>
-              </div>
-            </div>
+              {stateName}
+            </button>
           ))}
         </div>
+
+        {destinations.length > 0 ? (
+          <div className="explore-cards-wrap">
+            {destinations.map((place, index) => (
+              <article
+                key={`${activeState}-${place.name}`}
+                className={`floating-card ${visible ? "show" : ""}`}
+                style={{
+                  "--tilt": index % 2 === 0 ? "-2deg" : "2deg",
+                  transitionDelay: `${index * 80}ms`,
+                }}
+              >
+                <img
+                  className="card-bg"
+                  src={place.image}
+                  alt={place.name}
+                  onError={(e) => {
+                    e.target.src = "https://via.placeholder.com/640x420?text=TripPilot";
+                  }}
+                />
+                <div className="card-overlay">
+                  <h3 className="card-title">{place.name}</h3>
+                  <p className="card-subtitle">{activeState}</p>
+                  <button className="card-btn" type="button">
+                    View Details
+                  </button>
+                </div>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div
+            style={{
+              borderRadius: "18px",
+              border: "1px solid rgba(16, 123, 122, 0.2)",
+              background: "rgba(255, 255, 255, 0.7)",
+              color: "#185f5f",
+              fontWeight: 700,
+              padding: "34px 20px",
+              boxShadow: "0 12px 28px rgba(11, 67, 67, 0.08)",
+            }}
+          >
+            Coming soon 🚧
+          </div>
+        )}
       </div>
     </section>
   );
