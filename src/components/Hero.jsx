@@ -52,7 +52,9 @@ const Hero = () => {
         .hero-wrap {
           min-height: 100vh;
           padding: clamp(20px, 3vw, 40px);
-          background: linear-gradient(140deg, #d7f6f3 0%, #c0ece9 42%, #a8dddd 100%);
+          background:
+            radial-gradient(circle at 20% 30%, rgba(20, 184, 166, 0.15), transparent 55%),
+            linear-gradient(135deg, #e6fffb, #c7f9f5);
           font-family: Inter, Poppins, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
           animation: heroFadeIn 700ms ease both;
         }
@@ -61,14 +63,11 @@ const Hero = () => {
           width: min(1240px, 94vw);
           margin: 0 auto;
           border-radius: clamp(30px, 4vw, 44px);
-          background: linear-gradient(145deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.72));
-          border: 1px solid rgba(255, 255, 255, 0.75);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.95),
-            inset 0 -20px 35px rgba(42, 120, 124, 0.05),
-            0 24px 60px rgba(23, 92, 98, 0.17);
-          backdrop-filter: blur(9px);
-          -webkit-backdrop-filter: blur(9px);
+          background: rgba(255, 255, 255, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           padding: clamp(16px, 2vw, 24px) clamp(20px, 3.2vw, 40px) clamp(40px, 5vw, 64px);
           position: relative;
           overflow: hidden;
@@ -94,8 +93,8 @@ const Hero = () => {
           gap: 16px;
           padding: 10px 16px;
           border-radius: 999px;
-          background: linear-gradient(120deg, rgba(16, 123, 122, 0.96), rgba(37, 171, 156, 0.9));
-          border: 1px solid rgba(255, 255, 255, 0.22);
+          background: linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(13, 148, 136, 0.92));
+          border: 1px solid rgba(255, 255, 255, 0.3);
           box-shadow: 0 12px 30px rgba(8, 67, 64, 0.28);
         }
 
@@ -236,14 +235,14 @@ const Hero = () => {
           font-size: clamp(2.05rem, 5.5vw, 4rem);
           line-height: 1.04;
           letter-spacing: -0.03em;
-          color: #08363b;
+          color: #0b3b3a;
           max-width: 12ch;
         }
 
         .hero-copy p {
           margin: clamp(14px, 2vw, 22px) 0 0;
           max-width: 52ch;
-          color: #51656c;
+          color: #334155;
           font-size: clamp(0.98rem, 1.25vw, 1.1rem);
           line-height: 1.72;
         }
@@ -270,25 +269,26 @@ const Hero = () => {
         }
 
         .cta-primary {
-          background: linear-gradient(120deg, #178f89, #22b8a5);
+          background: linear-gradient(135deg, #0f766e, #14b8a6);
           color: #ffffff;
-          box-shadow: 0 12px 30px rgba(19, 137, 124, 0.28);
+          box-shadow: 0 16px 36px rgba(15, 118, 110, 0.35);
         }
 
         .cta-primary:hover {
-          box-shadow: 0 16px 36px rgba(19, 137, 124, 0.35);
+          box-shadow: 0 22px 44px rgba(15, 118, 110, 0.45);
         }
 
         .cta-secondary {
-          background: rgba(255, 255, 255, 0.72);
-          border: 1px solid rgba(22, 122, 118, 0.38);
-          color: #0e6266;
+          background: rgba(255, 255, 255, 0.35);
+          border: 1px solid rgba(15, 118, 110, 0.4);
+          color: #0b3b3a;
           box-shadow: 0 10px 24px rgba(19, 87, 90, 0.12);
         }
 
         .cta-secondary:hover {
-          background: rgba(255, 255, 255, 0.9);
-          box-shadow: 0 14px 30px rgba(19, 87, 90, 0.17);
+          background: rgba(15, 118, 110, 0.12);
+          color: #06302f;
+          box-shadow: 0 16px 32px rgba(19, 87, 90, 0.2);
         }
 
         .float-card {
@@ -299,20 +299,21 @@ const Hero = () => {
           overflow: hidden;
           border: 1px solid rgba(255, 255, 255, 0.62);
           box-shadow:
-            0 22px 50px rgba(8, 64, 69, 0.24),
-            0 0 0 1px rgba(158, 255, 243, 0.28),
+            0 25px 50px rgba(0, 0, 0, 0.25),
+            0 0 20px rgba(20, 184, 166, 0.3),
             inset 0 0 32px rgba(173, 251, 245, 0.2);
-          transition: transform 380ms ease, box-shadow 320ms ease;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
           animation: floatLoop 7s ease-in-out infinite;
           transform-style: preserve-3d;
           will-change: transform;
+          cursor: default;
         }
 
         .float-card:hover {
-          transform: perspective(900px) rotateX(4deg) rotateY(-6deg) translateY(-10px) scale(1.02) !important;
+          transform: translateY(-8px) scale(1.03) !important;
           box-shadow:
-            0 30px 62px rgba(8, 64, 69, 0.3),
-            0 0 0 1px rgba(176, 255, 247, 0.48),
+            0 20px 40px rgba(0, 0, 0, 0.25),
+            0 0 20px rgba(20, 184, 166, 0.35),
             inset 0 0 42px rgba(173, 251, 245, 0.32);
         }
 
@@ -621,9 +622,6 @@ const Hero = () => {
                 transform: `translateY(${parallaxOffset * 0.5}px) rotate(-7deg)`,
                 ["--tilt"]: "-7deg",
               }}
-              onClick={() => {
-                navigate("/dashboard/explore-trips");
-              }}
             >
               <span className="ai-badge">AI Recommended</span>
               <img src={taj} alt="Taj Mahal" />
@@ -638,9 +636,6 @@ const Hero = () => {
               style={{
                 transform: `translateY(${parallaxOffset * -0.35}px) rotate(5deg)`,
                 ["--tilt"]: "5deg",
-              }}
-              onClick={() => {
-                navigate("/dashboard/my-trips");
               }}
             >
               <span className="ai-badge">AI Recommended</span>

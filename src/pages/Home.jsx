@@ -1,10 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Hero from '../components/Hero';
 import WhyTripPilot from '../components/WhyTripPilot';
 import ExploreByState from '../components/ExploreByState';
 import Footer from '../components/Footer';
+import LoginModal from '../components/LoginModal';
 
 const Home = () => {
+  const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    try {
+      const hasSeenModal = sessionStorage.getItem('seenLoginModal') === 'true';
+      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+      if (!hasSeenModal && !isLoggedIn) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setShowModal(true);
+        sessionStorage.setItem('seenLoginModal', 'true');
+      }
+    // eslint-disable-next-line no-unused-vars
+    } catch (error) {
+      // If storage is unavailable for any reason, fail gracefully.
+      setShowModal(false);
+    }
+  }, []);
+
   return (
     <div
       style={{
@@ -15,6 +35,10 @@ const Home = () => {
         fontFamily: 'Arial, sans-serif',
       }}
     >
+      {showModal && (
+        <LoginModal onClose={() => setShowModal(false)} />
+      )}
+
       <Hero />
 
       {/* Why TripPilot Section (after hero) */}

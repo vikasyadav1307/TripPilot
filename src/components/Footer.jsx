@@ -123,28 +123,6 @@ const Footer = () => {
           margin-top: 16px;
           flex-wrap: wrap;
         }
-
-        .tp-social-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 10px;
-          border: 1px solid rgba(16, 123, 122, 0.2);
-          background: #1e293b;
-          color: #ffffff;
-          display: grid;
-          place-items: center;
-          text-decoration: none;
-          font-size: 1rem;
-          transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
-        }
-
-        .tp-social-icon:hover {
-          transform: translateY(-2px) scale(1.1);
-          background: #0f172a;
-          color: #1e8e8e;
-          box-shadow: 0 0 0 1px rgba(30, 142, 142, 0.45), 0 10px 22px rgba(30, 142, 142, 0.38);
-        }
-
         .tp-news-text {
           margin: 0 0 12px;
           color: #cbd5f5;
@@ -193,23 +171,6 @@ const Footer = () => {
         .tp-subscribe-btn:hover {
           transform: translateY(-1px);
           box-shadow: 0 14px 30px rgba(45, 212, 191, 0.45);
-        }
-
-        .tp-footer-bottom {
-          margin-top: 24px;
-          padding-top: 14px;
-          border-top: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(15, 23, 42, 0.28);
-          border-radius: 12px;
-          padding: 12px 14px 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          flex-wrap: wrap;
-          color: #cbd5f5;
-          font-size: 0.82rem;
-          font-weight: 600;
         }
 
         .tp-bottom-links {
