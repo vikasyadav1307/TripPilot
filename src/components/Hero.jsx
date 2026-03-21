@@ -70,6 +70,15 @@ const Hero = ({ currentUser, openLoginModal, onLogout }) => {
     navigate(path);
   };
 
+  const primaryDashboardCtaLabel = isLoggedIn ? 'Go to Dashboard' : 'Get Started';
+  const handlePrimaryCta = () => {
+    if (isLoggedIn) {
+      navigate('/dashboard');
+    } else {
+      handleOpenLoginModal('signup');
+    }
+  };
+
   return (
     <section className="hero-wrap" id="home">
       <style>{`
@@ -731,11 +740,9 @@ const Hero = ({ currentUser, openLoginModal, onLogout }) => {
               </button>
               <button
                 className="cta-btn cta-secondary"
-                onClick={() => {
-                  navigate("/dashboard");
-                }}
+                onClick={handlePrimaryCta}
               >
-                Dashboard
+                {primaryDashboardCtaLabel}
               </button>
               <button className="cta-btn cta-secondary" onClick={() => handleScrollTo("features")}>
                 See how it works

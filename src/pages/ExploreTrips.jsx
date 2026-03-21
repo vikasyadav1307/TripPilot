@@ -899,7 +899,10 @@ const ExploreTrips = () => {
             className={`et-sidebar-menu-item ${item.active ? "active" : ""}`}
             onClick={() => {
               if (item.label === "Dashboard") navigate("/dashboard");
-              if (item.label === "Account Settings") navigate("/account-settings");
+              if (item.label === "Account Settings") {
+                console.log('Account Settings clicked');
+                navigate('/account-settings');
+              }
               setSidebarOpen(false);
             }}
           >

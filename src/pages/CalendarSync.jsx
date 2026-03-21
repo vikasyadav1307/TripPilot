@@ -448,6 +448,10 @@ const CalendarSync = () => {
               if (item.label === "Explore Trips") navigate("/dashboard/explore-trips");
               if (item.label === "My Trips") navigate("/dashboard/my-trips");
               if (item.label === "Calendar Sync") navigate("/dashboard/calendar-sync");
+              if (item.label === "Account Settings") {
+                console.log('Account Settings clicked');
+                navigate('/account-settings');
+              }
               setSidebarOpen(false);
             }}
           >

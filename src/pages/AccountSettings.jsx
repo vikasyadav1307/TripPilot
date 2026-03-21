@@ -1,4 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const travelChips = ['Adventure', 'Food', 'Relaxation', 'Culture', 'Nightlife'];
 const languageOptions = ['English', 'Hindi', 'Spanish', 'French'];
@@ -8,10 +9,28 @@ const currencyOptions = [
   { value: 'EUR', label: 'Euro (€)' },
 ];
 
-const defaultSettings = {
+const getCurrentUser = () => {
+  try {
+    const raw = sessionStorage.getItem('currentUser');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getStoredSettings = () => {
+  try {
+    const data = localStorage.getItem('tp-account-settings');
+    return data ? JSON.parse(data) : null;
+  } catch {
+    return null;
+  }
+};
+
+const buildDefaultSettings = (user) => ({
   profile: {
-    name: 'Vikas Yadav',
-    email: 'vikas@trippilot.com',
+    name: user?.name || 'Vikas Yadav',
+    email: user?.email || 'vikas@trippilot.com',
     bio: 'Frequent traveller crafting memorable itineraries with TripPilot.',
     photo: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=60',
   },
@@ -30,19 +49,15 @@ const defaultSettings = {
   security: {
     twoFactor: true,
   },
-};
+});
 
 const AccountSettings = () => {
-  const storedSettings = (() => {
-    try {
-      const data = localStorage.getItem('tp-account-settings');
-      return data ? JSON.parse(data) : null;
-    } catch {
-      return null;
-    }
-  })();
-
-  const [settings, setSettings] = useState(storedSettings || defaultSettings);
+  const navigate = useNavigate();
+  const currentUser = useMemo(() => getCurrentUser(), []);
+  const [settings, setSettings] = useState(() => {
+    const stored = getStoredSettings();
+    return stored || buildDefaultSettings(currentUser);
+  });
   const [securityForm, setSecurityForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const [toast, setToast] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -53,6 +68,24 @@ const AccountSettings = () => {
     const timer = setTimeout(() => setToast(null), 2800);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    if (!currentUser?.email) {
+      return;
+    }
+    setSettings((prev) => {
+      if (prev.profile.email === currentUser.email) {
+        return prev;
+      }
+      return {
+        ...prev,
+        profile: {
+          ...prev.profile,
+          email: currentUser.email,
+        },
+      };
+    });
+  }, [currentUser?.email]);
 
   const handleProfileChange = (field, value) => {
     setSettings((prev) => ({
@@ -156,6 +189,17 @@ const AccountSettings = () => {
 
   const triggerAvatarUpload = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('token');
+      localStorage.removeItem('user');
+    } catch {
+      // ignore storage errors
+    }
+    navigate('/');
   };
 
   return (
@@ -278,8 +322,8 @@ const AccountSettings = () => {
                 label="Email"
                 type="email"
                 value={settings.profile.email}
-                onChange={(event) => handleProfileChange('email', event.target.value)}
                 placeholder="you@trippilot.com"
+                readOnly
               />
               <InputField
                 label="Bio"
@@ -403,10 +447,9 @@ const AccountSettings = () => {
               </div>
             </SettingsCard>
 
-            <SettingsCard title="Danger Zone" description="Manage sessions and account removal." tone="danger">
+            <SettingsCard title="Danger Zone" description="End your TripPilot session securely." tone="danger">
               <div className="as-danger-actions">
-                <Button type="button" variant="secondary">Logout</Button>
-                <Button type="button" variant="danger">Delete Account</Button>
+                <Button type="button" variant="danger" onClick={handleLogout}>Logout</Button>
               </div>
             </SettingsCard>
           </div>

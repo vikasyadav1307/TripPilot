@@ -665,6 +665,10 @@ const MyCalendar = () => {
               if (item.label === "My Trips") navigate("/dashboard/my-trips");
               if (item.label === "Calendar Sync") navigate("/dashboard/calendar-sync");
               if (item.label === "My Calendar") navigate("/dashboard/my-calendar");
+              if (item.label === "Account Settings") {
+                console.log('Account Settings clicked');
+                navigate('/account-settings');
+              }
               setSidebarOpen(false);
             }}
           >

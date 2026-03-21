@@ -675,6 +675,10 @@ const Dashboard = () => {
                   if (item.label === 'AI Planner') {
                     navigate('/ai-planner');
                   }
+                  if (item.label === 'Account Settings') {
+                    console.log('Account Settings clicked');
+                    navigate('/account-settings');
+                  }
                   setSidebarOpen(false);
                 }}
               >

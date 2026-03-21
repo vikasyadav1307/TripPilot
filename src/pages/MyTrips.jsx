@@ -581,6 +581,10 @@ const MyTrips = () => {
               if (item.label === "Dashboard") navigate("/dashboard");
               if (item.label === "Explore Trips") navigate("/dashboard/explore-trips");
               if (item.label === "My Trips") navigate("/dashboard/my-trips");
+              if (item.label === "Account Settings") {
+                console.log('Account Settings clicked');
+                navigate('/account-settings');
+              }
               setSidebarOpen(false);
             }}
           >
