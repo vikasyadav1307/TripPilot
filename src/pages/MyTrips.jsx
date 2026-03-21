@@ -644,7 +644,7 @@ const MyTrips = () => {
 
           <button
             className="mt-create-btn"
-            onClick={() => navigate("/dashboard/planner")}
+            onClick={() => navigate("/planner")}
           >
             + Create Trip
           </button>

@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import generateTripPlan from '../utils/tripPlannerLogic';
 
 const internationalTrips = [
   {
@@ -55,11 +56,60 @@ const indiaTrips = [
   },
 ];
 
+const availableTrips = [
+  {
+    title: 'Goa Beach Escape',
+    location: 'Goa, India',
+    duration: '3 Days',
+    price: '₹7,999',
+    rating: 4.7,
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=60',
+    tag: 'Trending',
+  },
+  {
+    title: 'Himalayan Adventure',
+    location: 'Manali, India',
+    duration: '5 Days',
+    price: '₹12,499',
+    rating: 4.8,
+    image: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=900&q=60',
+    tag: 'Adventure',
+  },
+  {
+    title: 'Royal Rajasthan Tour',
+    location: 'Jaipur, India',
+    duration: '4 Days',
+    price: '₹9,999',
+    rating: 4.6,
+    image: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=60',
+    tag: 'Cultural',
+  },
+];
+
+const preferenceOptions = ['Adventure', 'Relaxation', 'Food', 'Nightlife', 'Culture'];
+
+const initialFormState = {
+  destination: '',
+  days: '',
+  budget: '',
+  preferences: [],
+};
+
 const ExploreTrips = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const sidebarRef = useRef(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [formData, setFormData] = useState(initialFormState);
+  const [modalError, setModalError] = useState('');
+  const [loadingPlan, setLoadingPlan] = useState(false);
+  const [availableLoading, setAvailableLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAvailableLoading(false), 1200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleFavorite = (id) => {
     setFavorites((prev) =>
@@ -77,6 +127,67 @@ const ExploreTrips = () => {
     { label: "Account Settings", icon: "⚙️" },
     { label: "Help & Support", icon: "❓" },
   ];
+
+  const handlePlanTrip = (destination) => {
+    setFormData({ ...initialFormState, destination });
+    setModalError('');
+    setModalOpen(true);
+  };
+
+  const closeModal = (force = false) => {
+    if (!force && loadingPlan) return;
+    setModalOpen(false);
+    setFormData(initialFormState);
+    setModalError('');
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const togglePreference = (option) => {
+    setFormData((prev) => {
+      const alreadySelected = prev.preferences.includes(option);
+      return {
+        ...prev,
+        preferences: alreadySelected
+          ? prev.preferences.filter((item) => item !== option)
+          : [...prev.preferences, option],
+      };
+    });
+  };
+
+  const handleGeneratePlan = async (event) => {
+    event.preventDefault();
+    if (loadingPlan) return;
+
+    if (!formData.destination || !formData.days || !formData.budget || formData.preferences.length === 0) {
+      setModalError('Please fill every field and choose at least one preference.');
+      return;
+    }
+
+    setLoadingPlan(true);
+    setModalError('');
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 600));
+      const plan = generateTripPlan({
+        destination: formData.destination,
+        days: Number(formData.days),
+        budget: Number(formData.budget),
+        preferences: formData.preferences,
+      });
+
+      sessionStorage.setItem('aiPlanStructured', JSON.stringify(plan));
+      closeModal(true);
+      navigate('/ai-planner');
+    } catch (error) {
+      setModalError(error.message || 'Unable to generate plan right now.');
+    } finally {
+      setLoadingPlan(false);
+    }
+  };
 
   return (
     <div className="et-root">
@@ -110,12 +221,12 @@ const ExploreTrips = () => {
           align-items: center;
           gap: 14px;
           padding: 16px 10px 22px;
-          border-bottom: 1px solid rgba(255,255,255,0.18);
-          margin-bottom: 10px;
-        }
-
-        .et-sidebar-avatar {
-          width: 48px;
+                    <button
+                      className="et-card-btn"
+                      onClick={() => handlePlanTrip(trip.name)}
+                    >
+                      Plan Trip
+                    </button>
           height: 48px;
           border-radius: 50%;
           background: rgba(255,255,255,0.22);
@@ -302,6 +413,130 @@ const ExploreTrips = () => {
           box-shadow: 0 8px 32px rgba(13, 115, 119, 0.08);
         }
 
+        .et-available-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 18px;
+        }
+
+        .et-available-card {
+          background: #ffffff;
+          border-radius: 20px;
+          overflow: hidden;
+          box-shadow: 0 12px 30px rgba(15, 118, 110, 0.12);
+          transition: transform 220ms ease, box-shadow 220ms ease;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .et-available-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 20px 45px rgba(15, 118, 110, 0.2);
+        }
+
+        .et-available-card-media {
+          position: relative;
+        }
+
+        .et-available-card img {
+          width: 100%;
+          height: 180px;
+          object-fit: cover;
+          display: block;
+        }
+
+        .et-available-badge {
+          position: absolute;
+          top: 16px;
+          left: 16px;
+          background: rgba(15, 118, 110, 0.9);
+          color: white;
+          padding: 6px 14px;
+          border-radius: 999px;
+          font-size: 0.78rem;
+          font-weight: 600;
+          letter-spacing: 0.5px;
+        }
+
+        .et-available-body {
+          padding: 18px;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          flex: 1;
+        }
+
+        .et-available-title {
+          margin: 0;
+          font-size: 1.1rem;
+          color: #0f172a;
+        }
+
+        .et-available-location {
+          color: #0f766e;
+          font-weight: 600;
+          font-size: 0.9rem;
+        }
+
+        .et-available-meta {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          color: #475569;
+          font-size: 0.9rem;
+          margin-bottom: 8px;
+        }
+
+        .et-available-footer {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: auto;
+        }
+
+        .et-available-price {
+          font-size: 1.1rem;
+          font-weight: 700;
+          color: #0f766e;
+        }
+
+        .et-available-plan {
+          border-radius: 999px;
+          border: none;
+          background: linear-gradient(135deg, #0f766e, #14b8a6);
+          color: white;
+          padding: 10px 20px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 12px 24px rgba(15, 118, 110, 0.25);
+          transition: transform 180ms ease, box-shadow 180ms ease;
+        }
+
+        .et-available-plan:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 16px 30px rgba(15, 118, 110, 0.3);
+        }
+
+        .et-skeleton-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 18px;
+        }
+
+        .et-skeleton-card {
+          height: 260px;
+          border-radius: 20px;
+          background: linear-gradient(120deg, #eef5f5, #f6fbfb, #eef5f5);
+          background-size: 200% 200%;
+          animation: shimmer 1.5s linear infinite;
+        }
+
+        @keyframes shimmer {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
         .et-section-title {
           font-size: 1.2rem;
           font-weight: 700;
@@ -441,6 +676,136 @@ const ExploreTrips = () => {
           box-shadow: 0 6px 18px rgba(13, 115, 119, 0.28);
         }
 
+        .et-plan-modal-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(15, 23, 42, 0.55);
+          backdrop-filter: blur(6px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          animation: fadeIn 220ms ease forwards;
+          z-index: 120;
+        }
+
+        .et-plan-modal {
+          background: #ffffff;
+          width: min(520px, 100%);
+          border-radius: 28px;
+          box-shadow: 0 30px 80px rgba(15, 23, 42, 0.25);
+          padding: 28px;
+          animation: scaleIn 220ms ease forwards;
+        }
+
+        .et-plan-modal h3 {
+          margin: 0 0 6px;
+          color: #0f172a;
+          font-size: 1.35rem;
+        }
+
+        .et-plan-modal p {
+          margin: 0 0 18px;
+          color: #475569;
+        }
+
+        .et-plan-form {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .et-plan-form label {
+          font-weight: 600;
+          color: #0f172a;
+          margin-bottom: 4px;
+          display: block;
+        }
+
+        .et-plan-form input {
+          width: 100%;
+          border-radius: 14px;
+          border: 1px solid #d0d7e6;
+          padding: 12px;
+          font-size: 0.95rem;
+          outline: none;
+          transition: border-color 180ms ease, box-shadow 180ms ease;
+        }
+
+        .et-plan-form input:focus {
+          border-color: #0f766e;
+          box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+        }
+
+        .et-plan-chips {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .et-plan-chip {
+          border-radius: 999px;
+          border: 1px solid #b8d8d6;
+          padding: 8px 16px;
+          background: #f8fbfb;
+          cursor: pointer;
+          transition: all 180ms ease;
+          color: #0f172a;
+        }
+
+        .et-plan-chip.active {
+          background: linear-gradient(135deg, #0f766e, #14b8a6);
+          color: #fff;
+          border-color: transparent;
+          box-shadow: 0 10px 22px rgba(15, 118, 110, 0.25);
+        }
+
+        .et-plan-footer {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          margin-top: 4px;
+        }
+
+        .et-plan-btn {
+          border-radius: 999px;
+          border: none;
+          padding: 10px 18px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .et-plan-btn.secondary {
+          background: #e2e8f0;
+          color: #0f172a;
+        }
+
+        .et-plan-btn.primary {
+          background: linear-gradient(135deg, #0f766e, #14b8a6);
+          color: white;
+          box-shadow: 0 12px 30px rgba(15, 118, 110, 0.35);
+        }
+
+        .et-plan-error {
+          color: #b91c1c;
+          font-size: 0.9rem;
+        }
+
+        .et-plan-loader {
+          font-size: 0.9rem;
+          color: #0f766e;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes scaleIn {
+          from { transform: translateY(20px) scale(0.96); opacity: 0; }
+          to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+
         .et-overlay {
           display: none;
         }
@@ -534,6 +899,7 @@ const ExploreTrips = () => {
             className={`et-sidebar-menu-item ${item.active ? "active" : ""}`}
             onClick={() => {
               if (item.label === "Dashboard") navigate("/dashboard");
+              if (item.label === "Account Settings") navigate("/account-settings");
               setSidebarOpen(false);
             }}
           >
@@ -581,10 +947,23 @@ const ExploreTrips = () => {
         {/* Available Trips - Loading */}
         <section className="et-section">
           <h2 className="et-section-title">Available Trips</h2>
-          <div className="et-loading-area">
-            <div className="et-spinner" />
-            <span>Loading trips...</span>
-          </div>
+          {availableLoading ? (
+            <div className="et-skeleton-grid" aria-label="Loading trips">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="et-skeleton-card" />
+              ))}
+            </div>
+          ) : availableTrips.length ? (
+            <div className="et-available-grid">
+              {availableTrips.map((trip) => (
+                <AvailableTripCard key={trip.title} trip={trip} onPlan={handlePlanTrip} />
+              ))}
+            </div>
+          ) : (
+            <div className="et-loading-area">
+              <span>No trips available right now. Try exploring destinations!</span>
+            </div>
+          )}
         </section>
 
         {/* International Destinations */}
@@ -615,7 +994,7 @@ const ExploreTrips = () => {
                     <span className="et-card-price">{trip.price}</span>
                     <button
                       className="et-card-btn"
-                      onClick={() => navigate("/dashboard")}
+                      onClick={() => handlePlanTrip(trip.name)}
                     >
                       Plan Trip
                     </button>
@@ -654,7 +1033,7 @@ const ExploreTrips = () => {
                     <span className="et-card-price">{trip.price}</span>
                     <button
                       className="et-card-btn"
-                      onClick={() => navigate("/dashboard")}
+                      onClick={() => handlePlanTrip(trip.name)}
                     >
                       Plan Trip
                     </button>
@@ -665,6 +1044,140 @@ const ExploreTrips = () => {
           </div>
         </section>
       </main>
+
+      <PlanTripModal
+        open={modalOpen}
+        formData={formData}
+        onClose={closeModal}
+        onSubmit={handleGeneratePlan}
+        onInputChange={handleInputChange}
+        onTogglePreference={togglePreference}
+        loading={loadingPlan}
+        error={modalError}
+      />
+    </div>
+  );
+};
+
+const AvailableTripCard = ({ trip, onPlan }) => (
+  <article className="et-available-card">
+    <div className="et-available-card-media">
+      <img src={trip.image} alt={trip.title} loading="lazy" />
+      <span className="et-available-badge">{trip.tag}</span>
+    </div>
+    <div className="et-available-body">
+      <span className="et-available-location">{trip.location}</span>
+      <h3 className="et-available-title">{trip.title}</h3>
+      <div className="et-available-meta">
+        <span>📅 {trip.duration}</span>
+        <span>⭐ {trip.rating}</span>
+      </div>
+      <div className="et-available-footer">
+        <span className="et-available-price">{trip.price}</span>
+        <button
+          type="button"
+          className="et-available-plan"
+          onClick={() => onPlan(trip.location || trip.title)}
+        >
+          Plan Trip
+        </button>
+      </div>
+    </div>
+  </article>
+);
+
+const PlanTripModal = ({
+  open,
+  formData,
+  onClose,
+  onSubmit,
+  onInputChange,
+  onTogglePreference,
+  loading,
+  error,
+}) => {
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="et-plan-modal-overlay" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="et-plan-modal" onClick={(event) => event.stopPropagation()}>
+        <h3>Plan Your Trip to {formData.destination || '...'}</h3>
+        <p>Customize days, budget, and vibe to get a personalised TripPilot plan.</p>
+
+        <form className="et-plan-form" onSubmit={onSubmit}>
+          <div>
+            <label htmlFor="destination">Destination</label>
+            <input
+              id="destination"
+              name="destination"
+              value={formData.destination}
+              onChange={onInputChange}
+              placeholder="e.g., Goa"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="days">Number of Days</label>
+            <input
+              id="days"
+              name="days"
+              type="number"
+              min="1"
+              value={formData.days}
+              onChange={onInputChange}
+              placeholder="Enter days"
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="budget">Budget (INR)</label>
+            <input
+              id="budget"
+              name="budget"
+              type="number"
+              min="1000"
+              step="500"
+              value={formData.budget}
+              onChange={onInputChange}
+              placeholder="Total budget"
+              required
+            />
+          </div>
+
+          <div>
+            <label>Preferences</label>
+            <div className="et-plan-chips">
+              {preferenceOptions.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className={`et-plan-chip ${formData.preferences.includes(option) ? 'active' : ''}`}
+                  onClick={() => onTogglePreference(option)}
+                  aria-pressed={formData.preferences.includes(option)}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {error && <p className="et-plan-error">{error}</p>}
+          {loading && <p className="et-plan-loader">Generating your trip...</p>}
+
+          <div className="et-plan-footer">
+            <button type="button" className="et-plan-btn secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="et-plan-btn primary" disabled={loading}>
+              {loading ? 'Generating...' : 'Generate Plan'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

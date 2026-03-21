@@ -5,7 +5,26 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
   const navRef = useRef(null);
+
+  useEffect(() => {
+    const syncCurrentUser = () => {
+      try {
+        const storedCurrentUser = sessionStorage.getItem('currentUser');
+        setCurrentUser(storedCurrentUser ? JSON.parse(storedCurrentUser) : null);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+
+    syncCurrentUser();
+    window.addEventListener('storage', syncCurrentUser);
+
+    return () => {
+      window.removeEventListener('storage', syncCurrentUser);
+    };
+  }, []);
 
   useEffect(() => {
     const handleOutsideClick = (event) => {
@@ -32,6 +51,29 @@ const Navbar = () => {
     }
     setActiveDropdown(null);
     setMobileMenuOpen(false);
+  };
+
+  const closeMenus = () => {
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+  };
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('token');
+    } catch {
+      // Ignore storage cleanup failures and continue with redirect.
+    }
+
+    setCurrentUser(null);
+    closeMenus();
+    navigate('/');
+  };
+
+  const handleLogin = () => {
+    closeMenus();
+    navigate('/');
   };
 
   return (
@@ -420,8 +462,11 @@ const Navbar = () => {
                 👤
               </button>
               <div className={`tp-dropdown tp-profile-dropdown ${activeDropdown === 'profile' ? 'open' : ''}`}>
-                <button className="tp-dropdown-entry">Log In</button>
-                <button className="tp-dropdown-entry">Sign Up</button>
+                {currentUser ? (
+                  <button className="tp-dropdown-entry" onClick={handleLogout}>Logout</button>
+                ) : (
+                  <button className="tp-dropdown-entry" onClick={handleLogin}>Login</button>
+                )}
                 <button className="tp-dropdown-entry">My Trips</button>
                 <button className="tp-dropdown-entry">Settings</button>
               </div>
@@ -538,12 +583,15 @@ const Navbar = () => {
                   <span>Profile</span>
                 </button>
                 <div className={`tp-mobile-sub ${activeDropdown === 'profile' ? 'open' : ''}`}>
-                  <button className="tp-mobile-sub-entry">
-                    Log In
-                  </button>
-                  <button className="tp-mobile-sub-entry">
-                    Sign Up
-                  </button>
+                  {currentUser ? (
+                    <button className="tp-mobile-sub-entry" onClick={handleLogout}>
+                      Logout
+                    </button>
+                  ) : (
+                    <button className="tp-mobile-sub-entry" onClick={handleLogin}>
+                      Login
+                    </button>
+                  )}
                   <button className="tp-mobile-sub-entry">
                     My Trips
                   </button>

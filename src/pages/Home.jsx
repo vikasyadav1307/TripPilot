@@ -2,28 +2,57 @@ import React, { useState, useEffect } from 'react';
 import Hero from '../components/Hero';
 import WhyTripPilot from '../components/WhyTripPilot';
 import ExploreByState from '../components/ExploreByState';
+import TripPlanLauncher from '../components/TripPlanLauncher';
 import Footer from '../components/Footer';
 import LoginModal from '../components/LoginModal';
 
 const Home = () => {
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const storedCurrentUser = sessionStorage.getItem('currentUser');
+      return storedCurrentUser ? JSON.parse(storedCurrentUser) : null;
+    } catch {
+      return null;
+    }
+  });
   const [showModal, setShowModal] = useState(false);
+  const [modalMode, setModalMode] = useState('login');
 
   useEffect(() => {
-    try {
-      const hasSeenModal = sessionStorage.getItem('seenLoginModal') === 'true';
-      const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-
-      if (!hasSeenModal && !isLoggedIn) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setShowModal(true);
-        sessionStorage.setItem('seenLoginModal', 'true');
+    const syncCurrentUser = () => {
+      try {
+        const storedCurrentUser = sessionStorage.getItem('currentUser');
+        setCurrentUser(storedCurrentUser ? JSON.parse(storedCurrentUser) : null);
+      } catch {
+        setCurrentUser(null);
       }
-    // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      // If storage is unavailable for any reason, fail gracefully.
-      setShowModal(false);
-    }
+    };
+
+    window.addEventListener('storage', syncCurrentUser);
+    return () => window.removeEventListener('storage', syncCurrentUser);
   }, []);
+
+  const openLoginModal = (mode = 'login') => {
+    setModalMode(mode);
+    setShowModal(true);
+  };
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('token');
+    } catch {
+      // Ignore storage cleanup errors and continue updating UI.
+    }
+
+    setCurrentUser(null);
+    setShowModal(false);
+  };
+
+  const handleAuthSuccess = (user) => {
+    setCurrentUser(user);
+    setShowModal(false);
+  };
 
   return (
     <div
@@ -36,16 +65,27 @@ const Home = () => {
       }}
     >
       {showModal && (
-        <LoginModal onClose={() => setShowModal(false)} />
+        <LoginModal
+          mode={modalMode}
+          onClose={() => setShowModal(false)}
+          onAuthSuccess={handleAuthSuccess}
+        />
       )}
 
-      <Hero />
+      <Hero
+        currentUser={currentUser}
+        openLoginModal={openLoginModal}
+        onLogout={handleLogout}
+      />
 
       {/* Why TripPilot Section (after hero) */}
       <WhyTripPilot />
 
       {/* Explore by State (insert after How AI Crafts Your Journey) */}
       <ExploreByState />
+
+      {/* AI-powered trip planning cards + modal */}
+      <TripPlanLauncher />
 
       {/* Safe footer wrapper */}
       <div>

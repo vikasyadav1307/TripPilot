@@ -3,12 +3,15 @@ import { useNavigate } from "react-router-dom";
 import taj from "../assets/images/tajmahal.jpg";
 import beach from "../assets/images/beach.jpg";
 
-const Hero = () => {
+const Hero = ({ currentUser, openLoginModal, onLogout }) => {
   const navigate = useNavigate();
   const navRef = useRef(null);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [parallaxOffset, setParallaxOffset] = useState(0);
+  const isLoggedIn = Boolean(currentUser);
+  const userName = currentUser?.name || currentUser?.email?.split('@')[0] || 'Traveler';
+  const avatarLetter = userName.charAt(0).toUpperCase();
 
   useEffect(() => {
     const onOutsideClick = (event) => {
@@ -44,6 +47,27 @@ const Hero = () => {
 
   const toggleDropdown = (name) => {
     setActiveDropdown((prev) => (prev === name ? null : name));
+  };
+
+  const closeMenus = () => {
+    setActiveDropdown(null);
+    setMobileMenuOpen(false);
+  };
+
+  const handleOpenLoginModal = (mode) => {
+    closeMenus();
+    openLoginModal(mode);
+  };
+
+  const handleLogout = () => {
+    onLogout();
+    closeMenus();
+    navigate('/');
+  };
+
+  const handleNavigateFromProfile = (path) => {
+    closeMenus();
+    navigate(path);
   };
 
   return (
@@ -151,6 +175,83 @@ const Hero = () => {
         .profile-btn:hover {
           transform: scale(1.03);
           box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .auth-actions {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          position: relative;
+        }
+
+        .auth-signin,
+        .auth-signup {
+          border-radius: 999px;
+          cursor: pointer;
+          font-size: 0.9rem;
+          font-weight: 600;
+          padding: 9px 14px;
+          transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease, color 220ms ease;
+        }
+
+        .auth-signin {
+          border: 1px solid rgba(255, 255, 255, 0.45);
+          background: transparent;
+          color: #ecfeff;
+        }
+
+        .auth-signin:hover {
+          background: rgba(255, 255, 255, 0.15);
+          transform: translateY(-1px);
+        }
+
+        .auth-signup {
+          border: 0;
+          background: #ffffff;
+          color: #0f766e;
+          box-shadow: 0 10px 22px rgba(5, 46, 42, 0.24);
+        }
+
+        .auth-signup:hover {
+          transform: translateY(-1px) scale(1.02);
+          box-shadow: 0 14px 26px rgba(5, 46, 42, 0.3);
+        }
+
+        .profile-trigger {
+          border: 0;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.18);
+          color: #ecfeff;
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          padding: 7px 9px 7px 12px;
+          cursor: pointer;
+          transition: transform 220ms ease, box-shadow 220ms ease, background-color 220ms ease;
+        }
+
+        .profile-trigger:hover {
+          background: rgba(255, 255, 255, 0.24);
+          transform: translateY(-1px);
+          box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+        }
+
+        .profile-name {
+          font-size: 0.88rem;
+          font-weight: 600;
+          white-space: nowrap;
+        }
+
+        .profile-avatar {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.9);
+          color: #0f766e;
+          display: grid;
+          place-items: center;
+          font-size: 0.85rem;
+          font-weight: 700;
         }
 
         .menu-dropdown {
@@ -426,6 +527,7 @@ const Hero = () => {
           }
 
           .nav-links,
+          .auth-actions,
           .profile-wrap {
             display: none;
           }
@@ -551,15 +653,29 @@ const Hero = () => {
             </div>
           </div>
 
-          <div className="profile-wrap" style={{ position: "relative" }}>
-            <button className="profile-btn" onClick={() => toggleDropdown("profile")} aria-label="Profile menu">
-              👤
-            </button>
-            <div className={`menu-dropdown ${activeDropdown === "profile" ? "open" : ""}`}>
-              <button className="menu-entry">My Trips</button>
-              <button className="menu-entry">Saved Destinations</button>
-              <button className="menu-entry">Account Settings</button>
-            </div>
+          <div className="auth-actions">
+            {!isLoggedIn ? (
+              <>
+                <button className="auth-signin" onClick={() => handleOpenLoginModal('login')}>Sign In</button>
+                <button className="auth-signup" onClick={() => handleOpenLoginModal('signup')}>Sign Up</button>
+                <button className="profile-btn" onClick={closeMenus} aria-label="Profile">
+                  👤
+                </button>
+              </>
+            ) : (
+              <div className="profile-wrap" style={{ position: "relative" }}>
+                <button className="profile-trigger" onClick={() => toggleDropdown("profile")} aria-label="Profile menu">
+                  <span className="profile-name">Hi, {userName}</span>
+                  <span className="profile-avatar">{avatarLetter}</span>
+                </button>
+                <div className={`menu-dropdown ${activeDropdown === "profile" ? "open" : ""}`}>
+                  <button className="menu-entry" onClick={() => handleNavigateFromProfile('/dashboard/my-trips')}>My Trips</button>
+                  <button className="menu-entry" onClick={() => handleNavigateFromProfile('/dashboard/explore-trips')}>Saved Destinations</button>
+                  <button className="menu-entry" onClick={() => handleNavigateFromProfile('/dashboard')}>Account Settings</button>
+                  <button className="menu-entry" onClick={handleLogout}>Logout</button>
+                </div>
+              </div>
+            )}
           </div>
 
           <button
@@ -580,7 +696,19 @@ const Hero = () => {
             <button className="mobile-entry" onClick={() => handleScrollTo("features")}>Features</button>
             <button className="mobile-entry" onClick={() => handleScrollTo("contact")}>Contact</button>
             <button className="mobile-entry" onClick={() => handleScrollTo("careers")}>Careers</button>
-            <button className="mobile-entry">My Profile</button>
+            {!isLoggedIn ? (
+              <>
+                <button className="mobile-entry" onClick={() => handleOpenLoginModal('login')}>Sign In</button>
+                <button className="mobile-entry" onClick={() => handleOpenLoginModal('signup')}>Sign Up</button>
+              </>
+            ) : (
+              <>
+                <button className="mobile-entry" onClick={() => handleNavigateFromProfile('/dashboard/my-trips')}>My Trips</button>
+                <button className="mobile-entry" onClick={() => handleNavigateFromProfile('/dashboard/explore-trips')}>Saved Destinations</button>
+                <button className="mobile-entry" onClick={() => handleNavigateFromProfile('/dashboard')}>Account Settings</button>
+                <button className="mobile-entry" onClick={handleLogout}>Logout</button>
+              </>
+            )}
           </div>
         </div>
 

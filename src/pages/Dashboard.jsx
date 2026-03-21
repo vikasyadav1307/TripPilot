@@ -4,6 +4,23 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentUser] = useState(() => {
+    try {
+      const storedCurrentUser = sessionStorage.getItem('currentUser');
+      if (!storedCurrentUser) {
+        return { name: 'Traveler', email: '' };
+      }
+
+      const parsedCurrentUser = JSON.parse(storedCurrentUser);
+      if (!parsedCurrentUser?.name) {
+        return { name: 'Traveler', email: '' };
+      }
+
+      return parsedCurrentUser;
+    } catch {
+      return { name: 'Traveler', email: '' };
+    }
+  });
   const sidebarRef = useRef(null);
 
   useEffect(() => {
@@ -16,6 +33,16 @@ const Dashboard = () => {
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem('currentUser');
+      sessionStorage.removeItem('token');
+    } catch {
+      // Ignore storage errors and still navigate to home.
+    }
+    navigate('/');
+  };
 
   const menuItems = [
     { icon: '📊', label: 'Dashboard', active: true },
@@ -603,9 +630,9 @@ const Dashboard = () => {
 
         <aside className={`dash-sidebar ${sidebarOpen ? 'open' : ''}`} ref={sidebarRef}>
           <div className="dash-profile">
-            <div className="dash-avatar">V</div>
+            <div className="dash-avatar">{currentUser.name.charAt(0).toUpperCase()}</div>
             <div className="dash-profile-info">
-              <h4>Vikas Kumar</h4>
+              <h4>{currentUser.name}</h4>
               <p>Traveller</p>
             </div>
           </div>
@@ -646,7 +673,7 @@ const Dashboard = () => {
                     navigate('/dashboard/travel-buddies');
                   }
                   if (item.label === 'AI Planner') {
-                    navigate('/dashboard/planner');
+                    navigate('/ai-planner');
                   }
                   setSidebarOpen(false);
                 }}
@@ -657,7 +684,7 @@ const Dashboard = () => {
             ))}
           </div>
 
-          <button className="dash-logout">
+          <button className="dash-logout" onClick={handleLogout}>
             <span>🚪</span>
             <span>Logout</span>
           </button>
@@ -697,7 +724,7 @@ const Dashboard = () => {
           <section className="dash-actions">
             <button
               className="dash-action-btn"
-              onClick={() => navigate('/dashboard/planner')}
+              onClick={() => navigate('/ai-planner')}
             >
               <span className="dash-action-icon">🗺️</span>
               <span>Plan New Trip</span>

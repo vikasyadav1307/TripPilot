@@ -1,20 +1,195 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const LoginModal = ({ onClose }) => {
+const LoginModal = ({ onClose, mode = 'login', onAuthSuccess }) => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [isSignUpMode, setIsSignUpMode] = useState(() => {
+    if (mode === 'signup') {
+      return true;
+    }
+
+    if (mode === 'login') {
+      return false;
+    }
+
+    try {
+      const users = localStorage.getItem('users');
+      if (!users) {
+        return true;
+      }
+      const parsedUsers = JSON.parse(users);
+      return !Array.isArray(parsedUsers) || parsedUsers.length === 0;
+    } catch {
+      return true;
+    }
+  });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState(() => {
+    try {
+      const users = localStorage.getItem('users');
+      if (!users) {
+        return 'No account found. Please sign up first.';
+      }
+      const parsedUsers = JSON.parse(users);
+      return Array.isArray(parsedUsers) && parsedUsers.length > 0
+        ? ''
+        : 'No account found. Please sign up first.';
+    } catch {
+      return 'No account found. Please sign up first.';
+    }
+  });
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const getStoredUsers = () => {
+    try {
+      const users = localStorage.getItem('users');
+      if (!users) {
+        return [];
+      }
+
+      const parsedUsers = JSON.parse(users);
+      return Array.isArray(parsedUsers) ? parsedUsers : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const clearMessages = () => {
+    setErrorMessage('');
+    setSuccessMessage('');
+  };
+
+  const resetForm = () => {
+    setFormData({ name: '', email: '', password: '' });
+    setShowPassword(false);
+  };
+
+  const switchMode = (signUpMode) => {
+    setIsSignUpMode(signUpMode);
+    clearMessages();
+    resetForm();
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateEmail = (email) => emailRegex.test(email);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (isSignUpMode) {
+      handleRegister();
+      return;
+    }
+
+    handleLogin();
+  };
+
+  const handleRegister = () => {
+    const trimmedName = formData.name.trim();
+    const trimmedEmail = formData.email.trim().toLowerCase();
+    const password = formData.password;
+
+    clearMessages();
+
+    if (!trimmedName) {
+      setErrorMessage('Name is required.');
+      return;
+    }
+
+    if (!validateEmail(trimmedEmail)) {
+      setErrorMessage('Please enter a valid email address (example: user@example.com).');
+      return;
+    }
+
+    if (!password) {
+      setErrorMessage('Password should not be empty.');
+      return;
+    }
+
+    try {
+      const users = getStoredUsers();
+      const alreadyRegistered = users.some((user) => user.email === trimmedEmail);
+
+      if (alreadyRegistered) {
+        setErrorMessage('This email is already registered. Please log in.');
+        return;
+      }
+
+      const newUser = {
+        name: trimmedName,
+        email: trimmedEmail,
+        password,
+      };
+
+      localStorage.setItem('users', JSON.stringify([...users, newUser]));
+      setIsSignUpMode(false);
+      resetForm();
+      setErrorMessage('');
+      setSuccessMessage('Registration successful. Please log in.');
+    } catch {
+      setErrorMessage('Unable to save your account. Please try again.');
+    }
   };
 
   const handleLogin = () => {
-    try {
-      localStorage.setItem('isLoggedIn', 'true');
-    // eslint-disable-next-line no-unused-vars
-    } catch (error) {
-      // Ignore storage errors; still close the modal.
+    const trimmedEmail = formData.email.trim().toLowerCase();
+    const password = formData.password;
+
+    clearMessages();
+
+    if (!validateEmail(trimmedEmail)) {
+      setErrorMessage('Please enter a valid email address (example: user@example.com).');
+      return;
     }
-    onClose();
+
+    if (!password) {
+      setErrorMessage('Password should not be empty.');
+      return;
+    }
+
+    try {
+      const users = getStoredUsers();
+
+      if (users.length === 0) {
+        setErrorMessage('No registered users found. Redirecting to Sign Up.');
+        setIsSignUpMode(true);
+        return;
+      }
+
+      const user = users.find((storedUser) => storedUser.email === trimmedEmail);
+
+      if (!user) {
+        setErrorMessage('User not found. Please sign up first.');
+        setIsSignUpMode(true);
+        return;
+      }
+
+      if (user.password !== password) {
+        setErrorMessage('Incorrect password. Please try again.');
+        return;
+      }
+
+      const loggedInUser = { name: user.name, email: user.email };
+      sessionStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+      if (onAuthSuccess) {
+        onAuthSuccess(loggedInUser);
+      }
+      navigate('/dashboard');
+      onClose();
+    } catch {
+      setErrorMessage('Unable to log in. Please try again.');
+    }
   };
 
   return (
@@ -159,6 +334,26 @@ const LoginModal = ({ onClose }) => {
           font-size: 13px;
           color: rgba(15, 23, 42, 0.78);
           margin-bottom: 18px;
+        }
+
+        .tp-login-message {
+          margin-bottom: 12px;
+          border-radius: 10px;
+          padding: 8px 10px;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+
+        .tp-login-message--error {
+          background: rgba(220, 38, 38, 0.1);
+          border: 1px solid rgba(220, 38, 38, 0.35);
+          color: #991b1b;
+        }
+
+        .tp-login-message--success {
+          background: rgba(13, 148, 136, 0.12);
+          border: 1px solid rgba(13, 148, 136, 0.35);
+          color: #115e59;
         }
 
         .tp-login-field-group {
@@ -389,16 +584,45 @@ const LoginModal = ({ onClose }) => {
           <div className="tp-login-header">
             <div className="tp-login-header-plane">✈️</div>
             <div className="tp-login-brand">TripPilot</div>
-            <div className="tp-login-welcome">Welcome Back</div>
+            <div className="tp-login-welcome">{isSignUpMode ? 'Create Account' : 'Welcome Back'}</div>
           </div>
 
           <div className="tp-login-body">
             <div className="tp-login-subtitle">
-              Sync and explore your journeys across devices with a single login.
+              {isSignUpMode
+                ? 'Join TripPilot and start planning your travel adventures.'
+                : 'Sync and explore your journeys across devices with a single login.'}
             </div>
+
+            {errorMessage ? (
+              <div className="tp-login-message tp-login-message--error">{errorMessage}</div>
+            ) : null}
+            {successMessage ? (
+              <div className="tp-login-message tp-login-message--success">{successMessage}</div>
+            ) : null}
 
             <form onSubmit={handleSubmit}>
               <div className="tp-login-field-group">
+                {isSignUpMode ? (
+                  <div>
+                    <div className="tp-login-label-row">
+                      <div className="tp-login-label">Full Name</div>
+                    </div>
+                    <div className="tp-login-input-wrap">
+                      <span className="tp-login-input-icon">👤</span>
+                      <input
+                        type="text"
+                        name="name"
+                        className="tp-login-input"
+                        placeholder="Enter your full name"
+                        value={formData.name}
+                        onChange={handleInputChange}
+                        required={isSignUpMode}
+                      />
+                    </div>
+                  </div>
+                ) : null}
+
                 <div>
                   <div className="tp-login-label-row">
                     <div className="tp-login-label">Email Address</div>
@@ -407,8 +631,11 @@ const LoginModal = ({ onClose }) => {
                     <span className="tp-login-input-icon">✉️</span>
                     <input
                       type="email"
+                      name="email"
                       className="tp-login-input"
                       placeholder="users@example.com"
+                      value={formData.email}
+                      onChange={handleInputChange}
                       required
                     />
                   </div>
@@ -417,19 +644,24 @@ const LoginModal = ({ onClose }) => {
                 <div>
                   <div className="tp-login-label-row">
                     <div className="tp-login-label">Password</div>
-                    <button
-                      type="button"
-                      className="tp-login-forgot"
-                    >
-                      Forgot Password?
-                    </button>
+                    {!isSignUpMode ? (
+                      <button
+                        type="button"
+                        className="tp-login-forgot"
+                      >
+                        Forgot Password?
+                      </button>
+                    ) : null}
                   </div>
                   <div className="tp-login-input-wrap">
                     <span className="tp-login-input-icon">🔒</span>
                     <input
                       type={showPassword ? 'text' : 'password'}
+                      name="password"
                       className="tp-login-input"
                       placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={handleInputChange}
                       required
                     />
                     <button
@@ -449,39 +681,21 @@ const LoginModal = ({ onClose }) => {
                   <button
                     type="submit"
                     className="tp-login-btn tp-login-btn-primary"
-                    onClick={handleLogin}
                   >
-                    Login
+                    {isSignUpMode ? 'Sign Up' : 'Login'}
                     <span style={{ fontSize: '16px' }}>→</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="tp-login-btn tp-login-btn-admin"
-                    onClick={handleLogin}
-                  >
-                    Admin
                   </button>
                 </div>
               </div>
 
-              <div className="tp-login-divider">
-                <span className="tp-login-divider-line" />
-                <span className="tp-login-divider-text">or continue with</span>
-                <span className="tp-login-divider-line" />
-              </div>
-
-              <button
-                type="button"
-                className="tp-login-btn tp-login-btn-google"
-              >
-                <span className="tp-login-google-icon" />
-                <span>Continue with Google</span>
-              </button>
-
               <div className="tp-login-footer-row">
-                <span>Don't have an account?</span>
-                <button type="button" className="tp-login-signup">
-                  Sign Up
+                <span>{isSignUpMode ? 'Already have an account?' : "Don't have an account?"}</span>
+                <button
+                  type="button"
+                  className="tp-login-signup"
+                  onClick={() => switchMode(!isSignUpMode)}
+                >
+                  {isSignUpMode ? 'Login' : 'Sign Up'}
                 </button>
               </div>
             </form>
