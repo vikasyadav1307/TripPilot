@@ -84,6 +84,7 @@ const Hero = ({ currentUser, openLoginModal, onLogout }) => {
       <style>{`
         .hero-wrap {
           min-height: 100vh;
+          min-height: 100dvh;
           padding: clamp(20px, 3vw, 40px);
           background:
             radial-gradient(circle at 20% 30%, rgba(20, 184, 166, 0.15), transparent 55%),
@@ -530,6 +531,11 @@ const Hero = ({ currentUser, openLoginModal, onLogout }) => {
         }
 
         @media (max-width: 900px) {
+          .hero-wrap {
+            min-height: auto;
+            padding: 14px 10px 20px;
+          }
+
           .hero-nav {
             border-radius: 22px;
             align-items: center;
@@ -588,6 +594,8 @@ const Hero = ({ currentUser, openLoginModal, onLogout }) => {
 
           .hero-content {
             flex-direction: column;
+            margin-top: 14px;
+            gap: 18px;
           }
 
           .hero-copy {
@@ -605,7 +613,8 @@ const Hero = ({ currentUser, openLoginModal, onLogout }) => {
           }
 
           .hero-visual {
-            min-height: clamp(280px, 64vw, 360px);
+            min-height: clamp(220px, 56vw, 320px);
+            width: 100%;
           }
 
           .float-card {
@@ -633,10 +642,15 @@ const Hero = ({ currentUser, openLoginModal, onLogout }) => {
         }
 
         @media (max-width: 520px) {
+          .hero-wrap {
+            padding-bottom: 12px;
+          }
+
           .hero-shell {
             border-radius: 30px;
             padding-left: 14px;
             padding-right: 14px;
+            padding-bottom: 22px;
           }
 
           .hero-nav {

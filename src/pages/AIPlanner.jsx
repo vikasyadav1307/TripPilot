@@ -501,6 +501,7 @@ const AIPlanner = () => {
       <style>{`
         .ai-root {
           min-height: 100vh;
+          min-height: 100dvh;
           display: flex;
           background: radial-gradient(circle at 10% 10%, rgba(167, 243, 208, 0.36), transparent 40%),
             radial-gradient(circle at 88% 8%, rgba(191, 219, 254, 0.42), transparent 36%),
@@ -511,7 +512,8 @@ const AIPlanner = () => {
         .ai-sidebar {
           width: 280px;
           min-width: 280px;
-          height: 100vh;
+          min-height: 100vh;
+          min-height: 100dvh;
           background: linear-gradient(180deg, #ffffff 0%, #f8fdfd 100%);
           border-radius: 0 30px 30px 0;
           box-shadow: 4px 0 30px rgba(16, 123, 122, 0.08);

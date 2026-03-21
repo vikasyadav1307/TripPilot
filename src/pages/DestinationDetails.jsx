@@ -9,7 +9,7 @@ const DestinationDetails = () => {
 
   if (!destination) {
     return (
-      <main style={{ minHeight: "100vh", background: "linear-gradient(160deg, #e6f7f6, #f6fcff)", padding: "32px 16px" }}>
+      <main style={{ minHeight: "100dvh", background: "linear-gradient(160deg, #e6f7f6, #f6fcff)", padding: "32px 16px" }}>
         <div style={{ maxWidth: "980px", margin: "0 auto", background: "#ffffff", borderRadius: "20px", border: "1px solid #d1d5db", padding: "24px", boxShadow: "0 14px 30px rgba(15, 23, 42, 0.1)" }}>
           <h1 style={{ margin: 0, color: "#0f172a" }}>Destination not found</h1>
           <p style={{ color: "#64748b" }}>We could not find details for this destination.</p>
@@ -26,7 +26,7 @@ const DestinationDetails = () => {
   }
 
   return (
-    <main style={{ minHeight: "100vh", background: "linear-gradient(160deg, #e6f7f6, #f6fcff)", padding: "32px 16px" }}>
+    <main style={{ minHeight: "100dvh", background: "linear-gradient(160deg, #e6f7f6, #f6fcff)", padding: "32px 16px" }}>
       <div style={{ maxWidth: "980px", margin: "0 auto", display: "grid", gap: "18px" }}>
         <button
           type="button"

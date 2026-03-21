@@ -8,7 +8,7 @@ const Careers = () => {
   ];
 
   return (
-    <div style={{ padding: '2rem', backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+    <div style={{ padding: '2rem', backgroundColor: '#f8f9fa', minHeight: '100dvh' }}>
       <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Join TripPilot</h1>
       <div style={{
         display: 'grid',

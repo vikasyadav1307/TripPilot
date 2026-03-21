@@ -55,15 +55,24 @@ const Home = () => {
   };
 
   return (
-    <div
-      style={{
-        background: 'linear-gradient(135deg, #67c6c6 0%, #9de2e2 100%)',
-        minHeight: '100vh',
-        paddingTop: '40px',
-        paddingBottom: '40px',
-        fontFamily: 'Arial, sans-serif',
-      }}
-    >
+    <div className="home-page-wrap">
+      <style>{`
+        .home-page-wrap {
+          background: linear-gradient(135deg, #67c6c6 0%, #9de2e2 100%);
+          min-height: 100vh;
+          min-height: 100dvh;
+          padding-top: clamp(16px, 3vw, 40px);
+          padding-bottom: clamp(16px, 3vw, 40px);
+          font-family: Arial, sans-serif;
+        }
+
+        @media (max-width: 768px) {
+          .home-page-wrap {
+            padding-top: 10px;
+            padding-bottom: 12px;
+          }
+        }
+      `}</style>
       {showModal && (
         <LoginModal
           mode={modalMode}

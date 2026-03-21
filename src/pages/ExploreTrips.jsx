@@ -182,6 +182,7 @@ const ExploreTrips = () => {
         .et-root {
           display: flex;
           min-height: 100vh;
+          min-height: 100dvh;
           background: linear-gradient(135deg, #e8f6f6 0%, #d4eded 100%);
           font-family: Inter, Poppins, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
         }
@@ -198,6 +199,7 @@ const ExploreTrips = () => {
           top: 0;
           left: 0;
           height: 100vh;
+          height: 100dvh;
           z-index: 100;
           box-shadow: 4px 0 24px rgba(13, 115, 119, 0.18);
           transition: transform 280ms ease;

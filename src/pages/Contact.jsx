@@ -1,14 +1,17 @@
 import React from 'react';
 
 const Contact = () => {
+  const isMobile = typeof window !== 'undefined' ? window.innerWidth <= 768 : false;
+
   return (
     <div style={{
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
+      flexDirection: isMobile ? 'column' : 'row',
       padding: '2rem',
       backgroundColor: '#f8f9fa',
-      minHeight: '100vh'
+      minHeight: '100dvh'
     }}>
       {/* Form Section */}
       <div style={{

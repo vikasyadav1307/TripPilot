@@ -288,6 +288,7 @@ const AccountSettings = () => {
       <style>{`
         .as-root {
           min-height: 100vh;
+          min-height: 100dvh;
           padding: 36px 20px 76px;
           background: linear-gradient(to right, #dbeafe, #ecfeff);
           font-family: Inter, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;

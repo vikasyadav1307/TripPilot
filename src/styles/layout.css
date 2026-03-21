@@ -8,6 +8,7 @@ body {
 /* ====== LAYOUT WRAPPER ====== */
 .app-layout {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* ====== SIDEBAR (FIXED) ====== */
@@ -16,7 +17,8 @@ body {
   top: 0;
   left: 0;
   width: 260px;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100dvh;
 
   background: #111827;   /* dark visible color */
   color: white;
@@ -101,6 +103,7 @@ body {
   margin-left: 260px;
   padding: 24px;
   min-height: 100vh;
+  min-height: 100dvh;
   transition: margin-left 0.3s ease;
 }
 

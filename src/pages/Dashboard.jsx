@@ -21,6 +21,7 @@ const Dashboard = () => {
       <style>{`
         .dash-root {
           min-height: 100vh;
+          min-height: 100dvh;
           display: flex;
           background: linear-gradient(145deg, #e8f6f5 0%, #f0faf9 50%, #f7fcfc 100%);
           font-family: Inter, Poppins, "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -29,6 +30,7 @@ const Dashboard = () => {
         .dash-sidebar {
           width: 260px;
           min-height: 100vh;
+          min-height: 100dvh;
           background: linear-gradient(180deg, #ffffff 0%, #f8fdfd 100%);
           border-radius: 0 32px 32px 0;
           box-shadow: 4px 0 30px rgba(16, 123, 122, 0.08);
