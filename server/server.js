@@ -3,6 +3,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const connectDB = require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
 const tripPlannerRoutes = require('./routes/tripPlannerRoutes');
@@ -53,6 +54,13 @@ Tips:
 
 // For now this project is focused on a local chatbot.
 // You can later add AI API routes again when needed.
-app.listen(PORT, () => {
-  console.log(`TripPilot server running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`TripPilot server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Failed to start server:', error.message);
+    process.exit(1);
+  });

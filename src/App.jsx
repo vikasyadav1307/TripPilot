@@ -9,6 +9,8 @@ import CalendarSync from "./pages/CalendarSync";
 import MyCalendar from "./pages/MyCalendar";
 import AIPlanner from "./pages/AIPlanner";
 import AccountSettings from "./pages/AccountSettings";
+import DestinationDetails from "./pages/DestinationDetails";
+import DashboardLayout from "./components/DashboardLayout";
 
 const isAuthenticated = () => {
   try {
@@ -31,12 +33,22 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/dashboard/explore-trips" element={<ProtectedRoute><ExploreTrips /></ProtectedRoute>} />
-      <Route path="/dashboard/my-trips" element={<ProtectedRoute><MyTrips /></ProtectedRoute>} />
-      <Route path="/dashboard/calendar-sync" element={<ProtectedRoute><CalendarSync /></ProtectedRoute>} />
-      <Route path="/dashboard/my-calendar" element={<ProtectedRoute><MyCalendar /></ProtectedRoute>} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Dashboard />} />
+        <Route path="explore-trips" element={<ExploreTrips />} />
+        <Route path="my-trips" element={<MyTrips />} />
+        <Route path="calendar-sync" element={<CalendarSync />} />
+        <Route path="my-calendar" element={<MyCalendar />} />
+      </Route>
       <Route path="/ai-planner" element={<AIPlanner />} />
+      <Route path="/destination/:id" element={<DestinationDetails />} />
       <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
       <Route path="/careers" element={<Careers />} />
       <Route path="/contact" element={<Contact />} />

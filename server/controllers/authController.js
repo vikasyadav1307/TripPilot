@@ -1,5 +1,7 @@
 /* eslint-disable no-undef */
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 const User = require('../models/User');
 
 const generateToken = (user) => {
@@ -83,4 +85,53 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const updatePassword = async (req, res) => {
+  const { userId, email, currentPassword, newPassword } = req.body;
+  console.log('update-password payload:', req.body);
+
+  if ((!userId && !email) || !currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'userId/email, currentPassword, and newPassword are required' });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+  }
+
+  try {
+    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const hasValidUserId = typeof userId === 'string' && mongoose.Types.ObjectId.isValid(userId);
+
+    const lookup = hasValidUserId
+      ? { _id: userId }
+      : normalizedEmail
+        ? { email: normalizedEmail }
+        : null;
+
+    if (!lookup) {
+      return res.status(400).json({ message: 'Provide a valid userId or email' });
+    }
+
+    const user = await User.findOne(lookup);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isCurrentPasswordValid) {
+      return res.status(401).json({ message: 'Incorrect current password' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    console.error('update-password error:', error);
+    return res.status(500).json({ message: 'Server error', details: error.message });
+  }
+};
+
+module.exports = { register, login, updatePassword };

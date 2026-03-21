@@ -1,0 +1,88 @@
+:root {
+  --sidebar-width: 260px;
+  --sidebar-bg: #0f172a; /* slate-900 style */
+  --sidebar-text: #e5e7eb; /* gray-200 */
+  --sidebar-text-muted: #9ca3af; /* gray-400 */
+  --sidebar-accent: #3b82f6; /* blue-500 */
+}
+
+/* Fixed, full-height sidebar */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 16px;
+  box-sizing: border-box;
+}
+
+/* Brand section */
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.sidebar__brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--sidebar-accent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #ffffff;
+}
+
+.sidebar__brand-text {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Nav */
+.sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.sidebar__nav-link {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--sidebar-text-muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar__nav-link:hover {
+  background-color: rgba(148, 163, 184, 0.2); /* slate-400 alpha */
+  color: #e5e7eb;
+}
+
+.sidebar__nav-link--active {
+  background-color: rgba(59, 130, 246, 0.25); /* blue tint */
+  color: #ffffff;
+}
+
+/* Footer */
+.sidebar__footer {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.sidebar__footer-text {
+  font-size: 11px;
+  color: var(--sidebar-text-muted);
+}

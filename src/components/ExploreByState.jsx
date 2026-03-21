@@ -1,89 +1,18 @@
 import React, { useState, useEffect } from "react";
-
-const images = import.meta.glob("../assets/images/*.{jpg,jpeg,png,webp}", {
-  eager: true,
-});
-
-const normalize = (value) => value.toLowerCase().replace(/[^a-z0-9]/g, "");
-
-const getImage = (place) => {
-  const formatted = normalize(place);
-  const match = Object.keys(images).find((path) => {
-    const fileName = path.split("/").pop() || "";
-    return normalize(fileName).includes(formatted);
-  });
-
-  if (!match) {
-    return "https://via.placeholder.com/640x420?text=TripPilot";
-  }
-
-  const mod = images[match];
-  const src = mod && typeof mod === "object" && "default" in mod ? mod.default : mod;
-  return src || "https://via.placeholder.com/640x420?text=TripPilot";
-};
-
-const makePlace = (name) => ({
-  name,
-  image: getImage(name),
-});
-
-const statesList = [
-  "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
-  "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
-  "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
-  "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab",
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura",
-  "Uttar Pradesh", "Uttarakhand", "West Bengal",
-];
-
-const STATE_PLACE_NAMES = {
-  "Andhra Pradesh": ["Tirupati", "Visakhapatnam", "Araku Valley"],
-  "Arunachal Pradesh": ["Tawang", "Ziro Valley", "Bomdila"],
-  Assam: ["Kaziranga", "Guwahati", "Majuli"],
-  Bihar: ["Bodh Gaya", "Nalanda", "Patna"],
-  Chhattisgarh: ["Chitrakote", "Raipur", "Bastar"],
-  Goa: ["Baga Beach", "Calangute", "Anjuna", "Dudhsagar Falls"],
-  Gujarat: ["Statue of Unity", "Dwarka", "Somnath", "Kutch"],
-  Haryana: ["Kurukshetra", "Gurgaon", "Panchkula"],
-  "Himachal Pradesh": ["Manali", "Shimla", "Dharamshala", "Spiti Valley"],
-  Jharkhand: ["Ranchi", "Netarhat", "Deoghar"],
-  Karnataka: ["Bangalore", "Mysore", "Coorg", "Hampi"],
-  Kerala: ["Munnar", "Alleppey", "Kochi", "Wayanad"],
-  "Madhya Pradesh": ["Khajuraho", "Bhopal", "Indore", "Kanha"],
-  Maharashtra: ["Mumbai", "Pune", "Lonavala", "Ajanta Caves"],
-  Manipur: ["Loktak", "Imphal", "Ukhrul"],
-  Meghalaya: ["Shillong", "Cherrapunji", "Dawki"],
-  Mizoram: ["Aizawal", "Reiek", "Champhai"],
-  Nagaland: ["Kohima", "Hornbill", "Dzukou Valley"],
-  Odisha: ["Puri", "Konark", "Bhubaneswar"],
-  Punjab: ["Amritsar", "Golden Temple", "Jalandhar"],
-  Rajasthan: ["Jaipur", "Udaipur", "Jaisalmer", "Mount Abu"],
-  Sikkim: ["Gangtok", "Tsomgo Lake", "Pelling"],
-  "Tamil Nadu": ["Chennai", "Ooty", "Madurai", "Rameshwaram"],
-  Telangana: ["Hyderabad", "Warangal", "Bhadrachalam"],
-  Tripura: ["Agartala", "Ujjayanta", "Unakoti"],
-  "Uttar Pradesh": ["Taj Mahal", "Varanasi", "Ayodhya", "Lucknow"],
-  Uttarakhand: ["Nainital", "Mussoorie", "Rishikesh", "Kedarnath"],
-  "West Bengal": ["Darjeeling", "Kolkata", "Sundarbans"],
-};
-
-const PLACES = Object.fromEntries(
-  Object.entries(STATE_PLACE_NAMES).map(([stateName, places]) => [
-    stateName,
-    places.map(makePlace),
-  ])
-);
+import { useNavigate } from "react-router-dom";
+import { destinationsByState, statesList } from "../data/destinationData";
 
 const ExploreByState = () => {
+  const navigate = useNavigate();
   const [activeState, setActiveState] = useState(statesList[0]);
-  const [destinations, setDestinations] = useState(PLACES[statesList[0]] || []);
+  const [destinations, setDestinations] = useState(destinationsByState[statesList[0]] || []);
   const [visible, setVisible] = useState(true);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(false);
     const t = setTimeout(() => {
-      setDestinations(PLACES[activeState] || []);
+      setDestinations(destinationsByState[activeState] || []);
       const t2 = setTimeout(() => setVisible(true), 50);
       return () => clearTimeout(t2);
     }, 70);
@@ -305,7 +234,11 @@ const ExploreByState = () => {
                 <div className="card-overlay">
                   <h3 className="card-title">{place.name}</h3>
                   <p className="card-subtitle">{activeState}</p>
-                  <button className="card-btn" type="button">
+                  <button
+                    className="card-btn"
+                    type="button"
+                    onClick={() => navigate(`/destination/${place.id}`)}
+                  >
                     View Details
                   </button>
                 </div>

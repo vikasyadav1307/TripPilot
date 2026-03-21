@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import generateTripPlan from '../utils/tripPlannerLogic';
 
@@ -97,9 +97,7 @@ const initialFormState = {
 
 const ExploreTrips = () => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [favorites, setFavorites] = useState([]);
-  const sidebarRef = useRef(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [formData, setFormData] = useState(initialFormState);
   const [modalError, setModalError] = useState('');
@@ -116,17 +114,6 @@ const ExploreTrips = () => {
       prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
     );
   };
-
-  const menuItems = [
-    { label: "Dashboard", icon: "📊" },
-    { label: "Explore Trips", icon: "🌍", active: true },
-    { label: "My Trips", icon: "✈️" },
-    { label: "Calendar Sync", icon: "📅" },
-    { label: "Travel Buddies", icon: "👥" },
-    { label: "AI Planner", icon: "🤖" },
-    { label: "Account Settings", icon: "⚙️" },
-    { label: "Help & Support", icon: "❓" },
-  ];
 
   const handlePlanTrip = (destination) => {
     setFormData({ ...initialFormState, destination });
@@ -298,7 +285,7 @@ const ExploreTrips = () => {
 
         .et-main {
           flex: 1;
-          margin-left: 260px;
+          margin-left: 0;
           padding: 28px 36px 40px;
           display: flex;
           flex-direction: column;
@@ -874,61 +861,10 @@ const ExploreTrips = () => {
         }
       `}</style>
 
-      {/* Overlay for mobile sidebar */}
-      <div
-        className={`et-overlay ${sidebarOpen ? "open" : ""}`}
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      {/* Sidebar */}
-      <aside
-        className={`et-sidebar ${sidebarOpen ? "open" : ""}`}
-        ref={sidebarRef}
-      >
-        <div className="et-sidebar-profile">
-          <div className="et-sidebar-avatar">V</div>
-          <div>
-            <div className="et-sidebar-name">Vikas</div>
-            <div className="et-sidebar-role">Traveller</div>
-          </div>
-        </div>
-
-        {menuItems.map((item) => (
-          <button
-            key={item.label}
-            className={`et-sidebar-menu-item ${item.active ? "active" : ""}`}
-            onClick={() => {
-              if (item.label === "Dashboard") navigate("/dashboard");
-              if (item.label === "Account Settings") {
-                console.log('Account Settings clicked');
-                navigate('/account-settings');
-              }
-              setSidebarOpen(false);
-            }}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-
-        <button className="et-sidebar-logout">
-          <span>🚪</span>
-          <span>Logout</span>
-        </button>
-      </aside>
-
       {/* Main Content */}
       <main className="et-main">
         {/* Header */}
         <header className="et-header">
-          <button
-            className="et-hamburger"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
-
           <button className="et-back-btn" onClick={() => navigate("/")}>
             ← Back to Home
           </button>

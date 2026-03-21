@@ -1,21 +1,8 @@
-import React, { useState, useRef } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
 const CalendarSync = () => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const sidebarRef = useRef(null);
-
-  const menuItems = [
-    { label: "Dashboard", icon: "📊" },
-    { label: "Explore Trips", icon: "🌍" },
-    { label: "My Trips", icon: "✈️" },
-    { label: "Calendar Sync", icon: "📅", active: true },
-    { label: "Travel Buddies", icon: "👥" },
-    { label: "AI Planner", icon: "🤖" },
-    { label: "Account Settings", icon: "⚙️" },
-    { label: "Help & Support", icon: "❓" },
-  ];
 
   return (
     <div className="cs-root">
@@ -126,7 +113,7 @@ const CalendarSync = () => {
 
         .cs-main {
           flex: 1;
-          margin-left: 260px;
+          margin-left: 0;
           padding: 28px 36px 40px;
           display: flex;
           flex-direction: column;
@@ -420,64 +407,10 @@ const CalendarSync = () => {
         }
       `}</style>
 
-      {/* Overlay for mobile sidebar */}
-      <div
-        className={`cs-overlay ${sidebarOpen ? "open" : ""}`}
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      {/* Sidebar */}
-      <aside
-        className={`cs-sidebar ${sidebarOpen ? "open" : ""}`}
-        ref={sidebarRef}
-      >
-        <div className="cs-sidebar-profile">
-          <div className="cs-sidebar-avatar">V</div>
-          <div>
-            <div className="cs-sidebar-name">Vikas</div>
-            <div className="cs-sidebar-role">Traveller</div>
-          </div>
-        </div>
-
-        {menuItems.map((item) => (
-          <button
-            key={item.label}
-            className={`cs-sidebar-menu-item ${item.active ? "active" : ""}`}
-            onClick={() => {
-              if (item.label === "Dashboard") navigate("/dashboard");
-              if (item.label === "Explore Trips") navigate("/dashboard/explore-trips");
-              if (item.label === "My Trips") navigate("/dashboard/my-trips");
-              if (item.label === "Calendar Sync") navigate("/dashboard/calendar-sync");
-              if (item.label === "Account Settings") {
-                console.log('Account Settings clicked');
-                navigate('/account-settings');
-              }
-              setSidebarOpen(false);
-            }}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-
-        <button className="cs-sidebar-logout">
-          <span>🚪</span>
-          <span>Logout</span>
-        </button>
-      </aside>
-
       {/* Main Content */}
       <main className="cs-main">
         {/* Header */}
         <header className="cs-header">
-          <button
-            className="cs-hamburger"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
-
           <button className="cs-back-btn" onClick={() => navigate("/")}>
             ← Back to Home
           </button>

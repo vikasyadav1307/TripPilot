@@ -1,30 +1,45 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import TripsHeader from "../components/TripsHeader";
+import TripsTabs from "../components/TripsTabs";
+import TripsEmptyState from "../components/TripsEmptyState";
 
 const createdTripsData = [];
 const joinedTripsData = [];
 
 const MyTrips = () => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("created");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [sortBy, setSortBy] = useState("date");
-  const sidebarRef = useRef(null);
-
-  const menuItems = [
-    { label: "Dashboard", icon: "📊" },
-    { label: "Explore Trips", icon: "🌍" },
-    { label: "My Trips", icon: "✈️", active: true },
-    { label: "Calendar Sync", icon: "📅" },
-    { label: "Travel Buddies", icon: "👥" },
-    { label: "AI Planner", icon: "🤖" },
-    { label: "Account Settings", icon: "⚙️" },
-    { label: "Help & Support", icon: "❓" },
-  ];
 
   const currentTrips = activeTab === "created" ? createdTripsData : joinedTripsData;
+  const totalTrips = createdTripsData.length + joinedTripsData.length;
+  const invites = joinedTripsData.length;
+  const requests = 0;
+
+  const filteredTrips = currentTrips
+    .filter((trip) => {
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return true;
+
+      const name = trip.name?.toLowerCase() || "";
+      const destination = trip.destination?.toLowerCase() || "";
+      return name.includes(query) || destination.includes(query);
+    })
+    .filter((trip) => (statusFilter === "all" ? true : trip.status === statusFilter))
+    .sort((a, b) => {
+      if (sortBy === "name") {
+        return (a.name || "").localeCompare(b.name || "");
+      }
+
+      if (sortBy === "price") {
+        return (a.price || 0) - (b.price || 0);
+      }
+
+      return new Date(a.date || 0) - new Date(b.date || 0);
+    });
 
   return (
     <div className="mt-root">
@@ -135,8 +150,8 @@ const MyTrips = () => {
 
         .mt-main {
           flex: 1;
-          margin-left: 260px;
-          padding: 28px 36px 40px;
+          margin-left: 0;
+          padding: 0;
           display: flex;
           flex-direction: column;
           gap: 24px;
@@ -554,180 +569,96 @@ const MyTrips = () => {
         }
       `}</style>
 
-      {/* Overlay for mobile sidebar */}
-      <div
-        className={`mt-overlay ${sidebarOpen ? "open" : ""}`}
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      {/* Sidebar */}
-      <aside
-        className={`mt-sidebar ${sidebarOpen ? "open" : ""}`}
-        ref={sidebarRef}
-      >
-        <div className="mt-sidebar-profile">
-          <div className="mt-sidebar-avatar">V</div>
-          <div>
-            <div className="mt-sidebar-name">Vikas</div>
-            <div className="mt-sidebar-role">Traveller</div>
-          </div>
-        </div>
-
-        {menuItems.map((item) => (
-          <button
-            key={item.label}
-            className={`mt-sidebar-menu-item ${item.active ? "active" : ""}`}
-            onClick={() => {
-              if (item.label === "Dashboard") navigate("/dashboard");
-              if (item.label === "Explore Trips") navigate("/dashboard/explore-trips");
-              if (item.label === "My Trips") navigate("/dashboard/my-trips");
-              if (item.label === "Account Settings") {
-                console.log('Account Settings clicked');
-                navigate('/account-settings');
-              }
-              setSidebarOpen(false);
-            }}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-
-        <button className="mt-sidebar-logout">
-          <span>🚪</span>
-          <span>Logout</span>
-        </button>
-      </aside>
-
       {/* Main Content */}
       <main className="mt-main">
-        {/* Header */}
-        <header className="mt-header">
-          <button
-            className="mt-hamburger"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
+        <div className="flex w-full flex-col gap-6 p-6 md:gap-8 md:p-8">
+          <TripsHeader
+            totalTrips={totalTrips}
+            invites={invites}
+            requests={requests}
+            onCreateTrip={() => navigate("/planner")}
+          />
 
-          <button className="mt-back-btn" onClick={() => navigate("/")}>
-            ← Back to Home
-          </button>
+          <section className="rounded-2xl bg-white/90 p-6 shadow-md ring-1 ring-teal-100 md:p-8">
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <TripsTabs activeTab={activeTab} onChange={setActiveTab} />
 
-          <h1 className="mt-page-title">My Trips</h1>
-
-          <div className="mt-header-right">
-            <div className="mt-search-box">
-              <span>🔍</span>
-              <input type="text" placeholder="Search trips..." />
-            </div>
-            <button className="mt-notif-btn" aria-label="Notifications">
-              🔔
-              <span className="mt-notif-badge" />
-            </button>
-          </div>
-        </header>
-
-        {/* Tabs Row */}
-        <div className="mt-tabs-row">
-          <div className="mt-tabs">
-            <button
-              className={`mt-tab ${activeTab === "created" ? "active" : ""}`}
-              onClick={() => setActiveTab("created")}
-            >
-              Created Trips
-            </button>
-            <button
-              className={`mt-tab ${activeTab === "joined" ? "active" : ""}`}
-              onClick={() => setActiveTab("joined")}
-            >
-              Joined Trips
-            </button>
-          </div>
-
-          <button
-            className="mt-create-btn"
-            onClick={() => navigate("/planner")}
-          >
-            + Create Trip
-          </button>
-        </div>
-
-        {/* Filters Row */}
-        <div className="mt-filters-row">
-          <div className="mt-filter-search">
-            <span>🔍</span>
-            <input
-              type="text"
-              placeholder="Search destination..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          <button className="mt-filter-btn" aria-label="Filters">
-            ⚙️
-          </button>
-
-          <select
-            className="mt-dropdown"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="upcoming">Upcoming</option>
-            <option value="completed">Completed</option>
-            <option value="cancelled">Cancelled</option>
-          </select>
-
-          <select
-            className="mt-dropdown"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-          >
-            <option value="date">Sort by Date</option>
-            <option value="name">Sort by Name</option>
-            <option value="price">Sort by Price</option>
-          </select>
-        </div>
-
-        {/* Content Area */}
-        <section className="mt-content">
-          <h2 className="mt-section-title">
-            {activeTab === "created" ? "Your Created Trips" : "Trips You Joined"}
-          </h2>
-
-          {currentTrips.length === 0 ? (
-            <div className="mt-empty-state">
-              <div className="mt-empty-icon">
-                {activeTab === "created" ? "🗺️" : "✈️"}
+                <button
+                  type="button"
+                  onClick={() => navigate("/planner")}
+                  className="inline-flex items-center justify-center rounded-xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-teal-700 hover:shadow-lg"
+                >
+                  + Create New Trip
+                </button>
               </div>
-              <h3 className="mt-empty-title">
-                No trips found matching your criteria
-              </h3>
-              <p className="mt-empty-subtitle">Start a new adventure</p>
-            </div>
-          ) : (
-            <div className="mt-trips-grid">
-              {currentTrips.map((trip) => (
-                <div key={trip.id} className="mt-trip-card">
-                  <img
-                    src={trip.image}
-                    alt={trip.name}
-                    className="mt-trip-card-img"
+
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto] md:gap-4">
+                <div className="flex items-center gap-2 rounded-xl border border-teal-100 bg-white px-4 py-3 shadow-sm">
+                  <span className="text-base">🔍</span>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search trips by name or destination..."
+                    className="w-full border-none bg-transparent text-sm text-teal-900 outline-none placeholder:text-teal-400"
                   />
-                  <div className="mt-trip-card-body">
-                    <h4 className="mt-trip-card-name">{trip.name}</h4>
-                    <p className="mt-trip-card-meta">
-                      {trip.date} · {trip.status}
-                    </p>
-                  </div>
                 </div>
-              ))}
+
+                <select
+                  className="rounded-xl border border-teal-100 bg-white px-4 py-3 text-sm text-teal-800 shadow-sm outline-none transition focus:border-teal-400"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="upcoming">Upcoming</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+
+                <select
+                  className="rounded-xl border border-teal-100 bg-white px-4 py-3 text-sm text-teal-800 shadow-sm outline-none transition focus:border-teal-400"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                >
+                  <option value="date">Sort by Date</option>
+                  <option value="name">Sort by Name</option>
+                  <option value="price">Sort by Price</option>
+                </select>
+              </div>
+
+              <div className="rounded-2xl bg-slate-50 p-4 md:p-6">
+                {filteredTrips.length === 0 ? (
+                  <TripsEmptyState onCreateTrip={() => navigate("/planner")} />
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    {filteredTrips.map((trip) => (
+                      <article
+                        key={trip.id}
+                        className="overflow-hidden rounded-2xl bg-white shadow-md ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-lg"
+                      >
+                        <img
+                          src={trip.image}
+                          alt={trip.name}
+                          className="h-36 w-full object-cover"
+                        />
+                        <div className="p-4">
+                          <h3 className="text-base font-semibold text-teal-900">{trip.name}</h3>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {trip.destination || "Destination TBD"}
+                          </p>
+                          <p className="mt-2 text-xs font-medium uppercase tracking-wide text-teal-600">
+                            {trip.date} · {trip.status}
+                          </p>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          )}
-        </section>
+          </section>
+        </div>
       </main>
     </div>
   );

@@ -53,6 +53,12 @@ const menuItems = [
   { icon: '🤖', label: 'AI Planner', path: '/ai-planner', active: true },
 ];
 
+const secondaryMenuItems = [
+  { icon: '⚙️', label: 'Account Settings', path: '/account-settings' },
+  { icon: '📜', label: 'Terms & Policy', path: '/terms-policy' },
+  { icon: '❓', label: 'Help & Support', path: '/help-support' },
+];
+
 const legacyParse = (text) => {
   const lines = text
     .split('\n')
@@ -275,42 +281,59 @@ const AIPlanner = () => {
   const [aiResponse, setAiResponse] = useState(null);
   const [chatHistory, setChatHistory] = useState([]);
   const chatContainerRef = useRef(null);
+  const chatIdRef = useRef(0);
+
+  const getNextChatId = () => {
+    chatIdRef.current += 1;
+    return chatIdRef.current;
+  };
 
   useEffect(() => {
+    let hydrationTimer;
+
+    const queueHydration = (nextResponse, summaryText) => {
+      hydrationTimer = setTimeout(() => {
+        setAiResponse(nextResponse);
+        setChatHistory([
+          {
+            role: 'ai',
+            text: summaryText,
+            ts: getNextChatId(),
+          },
+        ]);
+      }, 0);
+    };
+
     try {
       const storedStructured = sessionStorage.getItem('aiPlanStructured');
       if (storedStructured) {
         const parsed = transformStructuredPlan(JSON.parse(storedStructured));
         if (parsed) {
-          setAiResponse(parsed);
-          setChatHistory([
-            {
-              role: 'ai',
-              text: parsed.summary,
-              ts: Date.now(),
-            },
-          ]);
+          queueHydration(parsed, parsed.summary);
         }
         sessionStorage.removeItem('aiPlanStructured');
-        return;
+        return () => {
+          if (hydrationTimer) {
+            clearTimeout(hydrationTimer);
+          }
+        };
       }
 
       const storedPlan = sessionStorage.getItem('aiPlanDraft');
       if (storedPlan) {
         const parsedPlan = parseAiTextToSections(storedPlan);
-        setAiResponse(parsedPlan);
-        setChatHistory([
-          {
-            role: 'ai',
-            text: parsedPlan.summary,
-            ts: Date.now(),
-          },
-        ]);
+        queueHydration(parsedPlan, parsedPlan.summary);
         sessionStorage.removeItem('aiPlanDraft');
       }
     } catch (error) {
       console.error('Failed to hydrate AI plan:', error);
     }
+
+    return () => {
+      if (hydrationTimer) {
+        clearTimeout(hydrationTimer);
+      }
+    };
   }, []);
 
   const currentUser = useMemo(() => {
@@ -329,30 +352,92 @@ const AIPlanner = () => {
 
   const closeMenus = () => setSidebarOpen(false);
 
-  const callPlannerApi = async (prompt) => {
-    const response = await fetch('http://localhost:5000/api/ai/generate', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prompt }),
-    });
+  const generateTripResponse = (input) => {
+    const queryText = `${input || ''}`.toLowerCase();
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data?.message || 'Unable to fetch AI response.');
+    if (queryText.includes('goa')) {
+      return {
+        title: '3-Day Goa Budget Trip',
+        summary: 'A beach-forward Goa plan with local food, nightlife, and affordable experiences.',
+        overview: 'A compact and lively Goa itinerary for travelers balancing fun and budget.',
+        itinerary: [
+          { day: 'Day 1', items: ['Beach visit at Baga', 'Local seafood lunch', 'Sunset at Chapora Fort'] },
+          { day: 'Day 2', items: ['Water sports session', 'Cafe hopping in Anjuna', 'Nightlife at Tito\'s lane'] },
+          { day: 'Day 3', items: ['Old Goa sightseeing', 'Street shopping', 'Relaxing beach sunset'] },
+        ],
+        budget: [
+          { label: 'Stay', amount: 'INR 3800' },
+          { label: 'Food', amount: 'INR 2100' },
+          { label: 'Transport', amount: 'INR 1400' },
+          { label: 'Activities', amount: 'INR 2200' },
+        ],
+        stays: ['Candolim budget hotels', 'Hostels in Anjuna', 'Guesthouses near Calangute'],
+        tips: ['Book early for cheaper stays', 'Rent a scooter for flexible transport'],
+      };
     }
 
-    if (!data?.result) {
-      throw new Error('AI response was empty.');
+    if (queryText.includes('jaipur')) {
+      return {
+        title: '4-Day Jaipur Cultural Trip',
+        summary: 'A heritage-rich Jaipur route covering forts, palaces, markets, and evening culture.',
+        overview: 'A curated cultural Jaipur getaway with architecture, crafts, and local cuisine.',
+        itinerary: [
+          { day: 'Day 1', items: ['Amber Fort', 'Panna Meena ka Kund', 'Light & sound show'] },
+          { day: 'Day 2', items: ['City Palace', 'Jantar Mantar', 'Hawa Mahal photoshoot'] },
+          { day: 'Day 3', items: ['Johari Bazaar shopping', 'Block printing workshop', 'Rajasthani dinner'] },
+          { day: 'Day 4', items: ['Albert Hall Museum', 'Cultural folk performance', 'Departure'] },
+        ],
+        budget: [
+          { label: 'Stay', amount: 'INR 5200' },
+          { label: 'Food', amount: 'INR 2600' },
+          { label: 'Transport', amount: 'INR 1800' },
+          { label: 'Experiences', amount: 'INR 2400' },
+        ],
+        stays: ['MI Road boutique stays', 'Bani Park hotels'],
+        tips: ['Start early for forts to avoid heat', 'Keep one evening for local cultural shows'],
+      };
     }
 
-    return parseAiTextToSections(data.result);
+    if (queryText.includes('budget') || queryText.includes('optimizer') || queryText.includes('cost')) {
+      return {
+        title: 'Budget Optimized Smart Travel Plan',
+        summary: 'A value-first trip split to maximize experiences without overspending.',
+        overview: 'This plan prioritizes affordable stays, local transport, and pre-booked experiences.',
+        itinerary: [
+          { day: 'Day 1', items: ['City intro walk', 'Transit pass activation', 'Budget-friendly dinner'] },
+          { day: 'Day 2', items: ['Free attractions tour', 'Local market lunch', 'Evening riverfront'] },
+          { day: 'Day 3', items: ['Half-day guided activity', 'Street food crawl', 'Souvenir stop'] },
+        ],
+        budget: [
+          { label: 'Stay', amount: '40%' },
+          { label: 'Food', amount: '20%' },
+          { label: 'Transport', amount: '15%' },
+          { label: 'Activities', amount: '25%' },
+        ],
+        stays: ['Hostels or budget hotels near transit hubs'],
+        tips: ['Travel weekdays for lower rates', 'Bundle tickets where possible'],
+      };
+    }
+
+    return {
+      title: 'Smart Travel Plan',
+      summary: 'A balanced trip template with local experiences, flexible pacing, and practical budgeting.',
+      overview: 'Explore local attractions, try regional food, and keep one slow day for recovery.',
+      itinerary: [
+        { day: 'Day 1', items: ['Explore local attractions', 'Try local food', 'Relax and enjoy'] },
+        { day: 'Day 2', items: ['Museum or heritage site', 'Market walk', 'Sunset viewpoint'] },
+        { day: 'Day 3', items: ['Nature spot', 'Cultural activity', 'Leisure evening'] },
+      ],
+      budget: [
+        { label: 'Budget', amount: 'Flexible' },
+      ],
+      stays: ['Central neighborhood stays with easy transport'],
+      tips: ['Keep one flexible slot daily for spontaneous plans'],
+    };
   };
 
-  const handleSend = async () => {
-    const trimmedQuery = query.trim();
+  const handleSend = async (overrideQuery) => {
+    const trimmedQuery = `${overrideQuery ?? query}`.trim();
     if (loading) {
       return;
     }
@@ -364,38 +449,32 @@ const AIPlanner = () => {
 
     setErrorMessage('');
     setLoading(true);
-    const userEntry = { role: 'user', text: trimmedQuery, ts: Date.now() };
+    const userEntry = { role: 'user', text: trimmedQuery, ts: getNextChatId() };
     setChatHistory((prev) => [...prev, userEntry]);
 
     try {
-      const response = await callPlannerApi(trimmedQuery);
-      setAiResponse(response);
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          role: 'ai',
-          text: response.summary,
-          ts: Date.now() + 1,
-        },
-      ]);
-      setQuery('');
+      setTimeout(() => {
+        const response = generateTripResponse(trimmedQuery);
+        setAiResponse(response);
+        setChatHistory((prev) => [
+          ...prev,
+          {
+            role: 'ai',
+            text: response.summary,
+            ts: getNextChatId(),
+          },
+        ]);
+        setQuery('');
+        setLoading(false);
 
-      requestAnimationFrame(() => {
-        if (chatContainerRef.current) {
-          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-        }
-      });
+        requestAnimationFrame(() => {
+          if (chatContainerRef.current) {
+            chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+          }
+        });
+      }, 1200);
     } catch (error) {
-      setErrorMessage(error.message || 'AI request failed. Please try again.');
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          role: 'ai',
-          text: 'I could not generate your plan right now. Please try again in a moment.',
-          ts: Date.now() + 1,
-        },
-      ]);
-    } finally {
+      setErrorMessage(error.message || 'Unable to generate plan right now.');
       setLoading(false);
     }
   };
@@ -413,6 +492,8 @@ const AIPlanner = () => {
 
   const handleFeatureCardClick = (presetQuery) => {
     setQuery(presetQuery);
+    setErrorMessage('');
+    handleSend(presetQuery);
   };
 
   return (
@@ -428,15 +509,18 @@ const AIPlanner = () => {
         }
 
         .ai-sidebar {
-          width: 260px;
-          min-height: 100vh;
+          width: 280px;
+          min-width: 280px;
+          height: 100vh;
           background: linear-gradient(180deg, #ffffff 0%, #f8fdfd 100%);
           border-radius: 0 30px 30px 0;
           box-shadow: 4px 0 30px rgba(16, 123, 122, 0.08);
           display: flex;
           flex-direction: column;
           padding: 22px 14px;
-          position: sticky;
+          overflow-y: auto;
+          position: fixed;
+          left: 0;
           top: 0;
           z-index: 40;
         }
@@ -482,6 +566,22 @@ const AIPlanner = () => {
           flex-direction: column;
           gap: 6px;
           flex: 1;
+          overflow-y: auto;
+          padding-right: 4px;
+        }
+
+        .ai-sidebar-bottom {
+          margin-top: auto;
+          border-top: 1px solid #e2e8f0;
+          padding-top: 12px;
+          background: #ffffff;
+        }
+
+        .ai-secondary-menu {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          margin-bottom: 10px;
         }
 
         .ai-menu-btn {
@@ -518,10 +618,13 @@ const AIPlanner = () => {
           padding: 11px;
           font-weight: 600;
           cursor: pointer;
+          width: 100%;
         }
 
         .ai-main {
           flex: 1;
+          margin-left: 280px;
+          width: calc(100% - 280px);
           padding: 20px;
         }
 
@@ -835,6 +938,11 @@ const AIPlanner = () => {
           .ai-results {
             grid-template-columns: 1fr;
           }
+
+          .ai-main {
+            margin-left: 0;
+            width: 100%;
+          }
         }
 
         @media (max-width: 640px) {
@@ -884,7 +992,25 @@ const AIPlanner = () => {
             ))}
           </div>
 
-          <button className="ai-logout" onClick={handleLogout}>Logout</button>
+          <div className="ai-sidebar-bottom">
+            <div className="ai-secondary-menu">
+              {secondaryMenuItems.map((item) => (
+                <button
+                  key={item.label}
+                  className="ai-menu-btn"
+                  onClick={() => {
+                    navigate(item.path);
+                    closeMenus();
+                  }}
+                >
+                  <span>{item.icon}</span>
+                  <span>{item.label}</span>
+                </button>
+              ))}
+            </div>
+
+            <button className="ai-logout" onClick={handleLogout}>Logout</button>
+          </div>
         </aside>
 
         <main className="ai-main">

@@ -1,24 +1,11 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const MyCalendar = () => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
   const [monthView, setMonthView] = useState("Month View");
   const [freeDays, setFreeDays] = useState([]);
-  const sidebarRef = useRef(null);
-
-  const menuItems = [
-    { label: "Dashboard", icon: "📊" },
-    { label: "Explore Trips", icon: "🌍" },
-    { label: "My Trips", icon: "✈️" },
-    { label: "Calendar Sync", icon: "🔗" },
-    { label: "My Calendar", icon: "📅", active: true },
-    { label: "Travel Buddies", icon: "👥" },
-    { label: "AI Planner", icon: "🤖" },
-    { label: "Account Settings", icon: "⚙️" },
-  ];
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   
@@ -168,7 +155,7 @@ const MyCalendar = () => {
 
         .mc-main {
           flex: 1;
-          margin-left: 260px;
+          margin-left: 0;
           padding: 28px 36px 40px;
           display: flex;
           flex-direction: column;
@@ -636,65 +623,10 @@ const MyCalendar = () => {
         }
       `}</style>
 
-      {/* Overlay for mobile sidebar */}
-      <div
-        className={`mc-overlay ${sidebarOpen ? "open" : ""}`}
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      {/* Sidebar */}
-      <aside
-        className={`mc-sidebar ${sidebarOpen ? "open" : ""}`}
-        ref={sidebarRef}
-      >
-        <div className="mc-sidebar-profile">
-          <div className="mc-sidebar-avatar">V</div>
-          <div>
-            <div className="mc-sidebar-name">Vikas</div>
-            <div className="mc-sidebar-role">Traveller</div>
-          </div>
-        </div>
-
-        {menuItems.map((item) => (
-          <button
-            key={item.label}
-            className={`mc-sidebar-menu-item ${item.active ? "active" : ""}`}
-            onClick={() => {
-              if (item.label === "Dashboard") navigate("/dashboard");
-              if (item.label === "Explore Trips") navigate("/dashboard/explore-trips");
-              if (item.label === "My Trips") navigate("/dashboard/my-trips");
-              if (item.label === "Calendar Sync") navigate("/dashboard/calendar-sync");
-              if (item.label === "My Calendar") navigate("/dashboard/my-calendar");
-              if (item.label === "Account Settings") {
-                console.log('Account Settings clicked');
-                navigate('/account-settings');
-              }
-              setSidebarOpen(false);
-            }}
-          >
-            <span>{item.icon}</span>
-            <span>{item.label}</span>
-          </button>
-        ))}
-
-        <button className="mc-sidebar-logout">
-          <span>🚪</span>
-          <span>Logout</span>
-        </button>
-      </aside>
-
       {/* Main Content */}
       <main className="mc-main">
         {/* Header */}
         <header className="mc-header">
-          <button
-            className="mc-hamburger"
-            onClick={() => setSidebarOpen(true)}
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
-
           <button className="mc-back-btn" onClick={() => navigate("/")}>
             ← Back to Home
           </button>

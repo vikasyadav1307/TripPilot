@@ -1,62 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react';
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentUser] = useState(() => {
-    try {
-      const storedCurrentUser = sessionStorage.getItem('currentUser');
-      if (!storedCurrentUser) {
-        return { name: 'Traveler', email: '' };
-      }
-
-      const parsedCurrentUser = JSON.parse(storedCurrentUser);
-      if (!parsedCurrentUser?.name) {
-        return { name: 'Traveler', email: '' };
-      }
-
-      return parsedCurrentUser;
-    } catch {
-      return { name: 'Traveler', email: '' };
-    }
-  });
-  const sidebarRef = useRef(null);
-
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-        setSidebarOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, []);
-
-  const handleLogout = () => {
-    try {
-      sessionStorage.removeItem('currentUser');
-      sessionStorage.removeItem('token');
-    } catch {
-      // Ignore storage errors and still navigate to home.
-    }
-    navigate('/');
-  };
-
-  const menuItems = [
-    { icon: '📊', label: 'Dashboard', active: true },
-    { icon: '🌍', label: 'Explore Trips' },
-    { icon: '✈️', label: 'My Trips' },
-    { icon: '🔄', label: 'Calendar Sync' },
-    { icon: '📅', label: 'My Calendar' },
-    { icon: '👥', label: 'Travel Buddies' },
-    { icon: '🤖', label: 'AI Planner' },
-    { icon: '⚙️', label: 'Account Settings' },
-    { icon: '📜', label: 'Terms & Policy' },
-    { icon: '❓', label: 'Help & Support' },
-  ];
-
   const statsData = [
     { label: 'Total Trips', value: '24', icon: '✈️', color: '#e0f7f5' },
     { label: 'Travel Buddies', value: '12', icon: '👥', color: '#e8f4fd' },
@@ -199,7 +145,7 @@ const Dashboard = () => {
 
         .dash-main {
           flex: 1;
-          margin-left: 260px;
+          margin-left: 0;
           padding: 24px 28px 40px;
           display: flex;
           flex-direction: column;
@@ -623,87 +569,9 @@ const Dashboard = () => {
       `}</style>
 
       <div className="dash-root">
-        <div
-          className={`dash-sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
-          onClick={() => setSidebarOpen(false)}
-        />
-
-        <aside className={`dash-sidebar ${sidebarOpen ? 'open' : ''}`} ref={sidebarRef}>
-          <div className="dash-profile">
-            <div className="dash-avatar">{currentUser.name.charAt(0).toUpperCase()}</div>
-            <div className="dash-profile-info">
-              <h4>{currentUser.name}</h4>
-              <p>Traveller</p>
-            </div>
-          </div>
-
-          <div className="dash-menu">
-            <button
-              className="dash-menu-item"
-              onClick={() => {
-                navigate('/');
-                setSidebarOpen(false);
-              }}
-            >
-              <span>🏠</span>
-              <span>Home</span>
-            </button>
-
-            {menuItems.map((item, index) => (
-              <button
-                key={index}
-                className={`dash-menu-item ${item.active ? 'active' : ''}`}
-                onClick={() => {
-                  if (item.label === 'Dashboard') {
-                    navigate('/dashboard');
-                  }
-                  if (item.label === 'Explore Trips') {
-                    navigate('/dashboard/explore-trips');
-                  }
-                  if (item.label === 'My Trips') {
-                    navigate('/dashboard/my-trips');
-                  }
-                  if (item.label === 'Calendar Sync') {
-                    navigate('/dashboard/calendar-sync');
-                  }
-                  if (item.label === 'My Calendar') {
-                    navigate('/dashboard/my-calendar');
-                  }
-                  if (item.label === 'Travel Buddies') {
-                    navigate('/dashboard/travel-buddies');
-                  }
-                  if (item.label === 'AI Planner') {
-                    navigate('/ai-planner');
-                  }
-                  if (item.label === 'Account Settings') {
-                    console.log('Account Settings clicked');
-                    navigate('/account-settings');
-                  }
-                  setSidebarOpen(false);
-                }}
-              >
-                <span>{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
-
-          <button className="dash-logout" onClick={handleLogout}>
-            <span>🚪</span>
-            <span>Logout</span>
-          </button>
-        </aside>
-
         <main className="dash-main">
           <header className="dash-header">
             <div className="dash-header-left">
-              <button
-                className="dash-hamburger"
-                onClick={() => setSidebarOpen(true)}
-                aria-label="Open menu"
-              >
-                ☰
-              </button>
               <button className="dash-back-btn" aria-label="Go back">←</button>
             </div>
 
