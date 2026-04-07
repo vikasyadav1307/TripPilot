@@ -1,30 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import goaCardImage from '../assets/images/bagabeach.jpg';
+import jaipurCardImage from '../assets/images/jaipur.jpg';
+import baliCardImage from '../assets/images/beach.jpg';
+import tokyoCardImage from '../assets/images/tokyo.webp';
 
 const destinations = [
   {
     name: 'Goa, India',
     region: 'Coastal escape',
     description: 'Sunlit beaches, lively shacks, and Portuguese heritage walks.',
-    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=900&q=60',
+    image: goaCardImage,
   },
   {
     name: 'Jaipur, Rajasthan',
     region: 'Culture & palaces',
     description: 'Amber Fort, pink streets, rooftop dining, and local bazaars.',
-    image: 'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=900&q=60',
+    image: jaipurCardImage,
   },
   {
     name: 'Bali, Indonesia',
     region: 'Island life',
     description: 'Rice terraces, private villas, waterfalls, and beach clubs.',
-    image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=900&q=60',
+    image: baliCardImage,
   },
   {
     name: 'Tokyo, Japan',
     region: 'City + culture',
     description: 'Neon nights, sushi alleys, tranquil shrines, and cafes.',
-    image: 'https://images.unsplash.com/photo-1505065585804-9fdd70af5440?auto=format&fit=crop&w=900&q=60',
+    image: tokyoCardImage,
   },
 ];
 
@@ -43,6 +47,11 @@ const TripPlanLauncher = () => {
   const [formData, setFormData] = useState(initialFormState);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const handleCardImageError = (event) => {
+    event.currentTarget.onerror = null;
+    event.currentTarget.src = '/images/default.jpg';
+  };
 
   const openModal = (destination) => {
     setFormData({ ...initialFormState, destination });
@@ -369,7 +378,12 @@ const TripPlanLauncher = () => {
         <div className="plan-grid">
           {destinations.map((destination) => (
             <article key={destination.name} className="plan-card">
-              <img src={destination.image} alt={destination.name} loading="lazy" />
+              <img
+                src={destination.image}
+                alt={destination.name}
+                loading="lazy"
+                onError={handleCardImageError}
+              />
               <div className="plan-card-body">
                 <span className="plan-card-region">{destination.region}</span>
                 <h3 className="plan-card-destination">{destination.name}</h3>
