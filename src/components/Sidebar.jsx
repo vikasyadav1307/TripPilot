@@ -10,6 +10,7 @@ const navItems = [
   { label: "Calendar Sync", to: "/dashboard/calendar-sync", icon: "🔄" },
   { label: "My Calendar", to: "/dashboard/my-calendar", icon: "📅" },
   { label: "AI Planner", to: "/ai-planner", icon: "🤖" },
+  { label: "Hotels", to: "/hotels", icon: "🏨" },
 ];
 
 const secondaryItems = [

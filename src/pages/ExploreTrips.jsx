@@ -76,8 +76,8 @@ const availableTrips = [
     tag: 'Adventure',
   },
   {
-    title: 'Royal Rajasthan Tour',
-    location: 'Jaipur, India',
+    title: 'Taj Mahal Tour',
+    location: 'Agra, India',
     duration: '4 Days',
     price: '₹9,999',
     rating: 4.6,

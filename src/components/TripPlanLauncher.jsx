@@ -33,11 +33,13 @@ const destinations = [
 ];
 
 const preferenceOptions = ['Adventure', 'Relaxation', 'Food', 'Nightlife', 'Culture'];
+const travelStyles = ['budget', 'luxury', 'adventure', 'family'];
 
 const initialFormState = {
   destination: '',
   days: '',
   budget: '',
+  travelStyle: 'budget',
   preferences: [],
 };
 
@@ -87,8 +89,8 @@ const TripPlanLauncher = () => {
     event.preventDefault();
     if (loading) return;
 
-    if (!formData.destination || !formData.days || !formData.budget || formData.preferences.length === 0) {
-      setError('Please fill all fields and choose at least one preference.');
+    if (!formData.destination || !formData.days || !formData.budget || !formData.travelStyle) {
+      setError('Please fill destination, days, budget, and travel style.');
       return;
     }
 
@@ -103,17 +105,20 @@ const TripPlanLauncher = () => {
           destination: formData.destination,
           days: Number(formData.days),
           budget: Number(formData.budget),
+          travelStyle: formData.travelStyle,
+          planType: 'complete',
+          preferredActivities: formData.preferences,
           preferences: formData.preferences,
         }),
       });
 
       const data = await response.json();
 
-      if (!response.ok || !data?.success || !data?.plan) {
+      if (!response.ok || !data?.success || !data?.trip) {
         throw new Error(data?.message || 'Trip generation failed.');
       }
 
-      sessionStorage.setItem('aiPlanDraft', data.plan);
+      sessionStorage.setItem('aiPlanComplete', JSON.stringify(data.trip));
       setModalOpen(false);
       setFormData(initialFormState);
       navigate('/ai-planner');
@@ -441,6 +446,32 @@ const TripPlanLauncher = () => {
                   placeholder="Total budget"
                   required
                 />
+              </div>
+
+              <div>
+                <label htmlFor="travelStyle">Travel Style</label>
+                <select
+                  id="travelStyle"
+                  name="travelStyle"
+                  value={formData.travelStyle}
+                  onChange={handleInputChange}
+                  required
+                  style={{
+                    width: '100%',
+                    borderRadius: '14px',
+                    border: '1px solid #d0d7e6',
+                    padding: '12px',
+                    fontSize: '0.95rem',
+                    outline: 'none',
+                    background: '#fff',
+                  }}
+                >
+                  {travelStyles.map((style) => (
+                    <option key={style} value={style}>
+                      {style.charAt(0).toUpperCase() + style.slice(1)}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>

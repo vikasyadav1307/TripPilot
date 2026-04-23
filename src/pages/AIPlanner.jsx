@@ -272,6 +272,43 @@ const transformStructuredPlan = (plan) => {
   };
 };
 
+const transformCompletePlan = (plan) => {
+  if (!plan || typeof plan !== 'object') {
+    return null;
+  }
+
+  const summary = plan.trip_summary || {};
+  const itinerary = Array.isArray(plan.itinerary)
+    ? plan.itinerary.map((day) => ({
+        day: `Day ${day.day || ''}`.trim(),
+        items: [
+          day.morning ? `Morning: ${day.morning}` : '',
+          day.afternoon ? `Afternoon: ${day.afternoon}` : '',
+          day.evening ? `Evening: ${day.evening}` : '',
+          day.estimated_cost ? `Estimated Cost: ${day.estimated_cost}` : '',
+        ].filter(Boolean),
+      }))
+    : [];
+
+  const budget = plan.budget_breakdown
+    ? Object.entries(plan.budget_breakdown).map(([label, amount]) => ({
+        label: label.charAt(0).toUpperCase() + label.slice(1),
+        amount,
+      }))
+    : [];
+
+  return {
+    title: summary.destination ? `${summary.destination} Complete Plan` : 'Complete Travel Plan',
+    summary: `${summary.duration || ''} ${summary.style || ''} plan within ${summary.budget || ''}`.trim(),
+    overview: `Destination: ${summary.destination || 'N/A'} | Duration: ${summary.duration || 'N/A'} | Budget: ${summary.budget || 'N/A'} | Style: ${summary.style || 'N/A'}`,
+    itinerary,
+    budget,
+    stays: Array.isArray(plan.hotels) ? plan.hotels : [],
+    tips: Array.isArray(plan.tips) ? plan.tips : [],
+    places: itinerary.flatMap((day) => day.items),
+  };
+};
+
 const AIPlanner = () => {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -305,6 +342,20 @@ const AIPlanner = () => {
     };
 
     try {
+      const storedComplete = sessionStorage.getItem('aiPlanComplete');
+      if (storedComplete) {
+        const parsedComplete = transformCompletePlan(JSON.parse(storedComplete));
+        if (parsedComplete) {
+          queueHydration(parsedComplete, parsedComplete.summary || 'Your complete travel plan is ready.');
+        }
+        sessionStorage.removeItem('aiPlanComplete');
+        return () => {
+          if (hydrationTimer) {
+            clearTimeout(hydrationTimer);
+          }
+        };
+      }
+
       const storedStructured = sessionStorage.getItem('aiPlanStructured');
       if (storedStructured) {
         const parsed = transformStructuredPlan(JSON.parse(storedStructured));
@@ -1108,9 +1159,21 @@ const AIPlanner = () => {
                       <>
                         <h3>Stay Suggestions</h3>
                         <ul className="ai-place-list">
-                          {aiResponse.stays.map((stay) => (
-                            <li key={stay}>{stay}</li>
-                          ))}
+                          {aiResponse.stays.map((stay, index) => {
+                            if (typeof stay === 'string') {
+                              return <li key={`${stay}-${index}`}>{stay}</li>;
+                            }
+
+                            return (
+                              <li key={`${stay.name || 'hotel'}-${index}`}>
+                                <strong>{stay.name || 'Hotel'}</strong>
+                                {stay.location ? `, ${stay.location}` : ''}
+                                {stay.price ? ` - ${stay.price}` : ''}
+                                {stay.rating ? ` (⭐ ${stay.rating})` : ''}
+                                {stay.description ? `: ${stay.description}` : ''}
+                              </li>
+                            );
+                          })}
                         </ul>
                       </>
                     ) : null}

@@ -8,6 +8,7 @@ import MyTrips from "./pages/MyTrips";
 import CalendarSync from "./pages/CalendarSync";
 import MyCalendar from "./pages/MyCalendar";
 import AIPlanner from "./pages/AIPlanner";
+import Hotels from "./pages/Hotels";
 import AccountSettings from "./pages/AccountSettings";
 import DestinationDetails from "./pages/DestinationDetails";
 import DashboardLayout from "./components/DashboardLayout";
@@ -48,6 +49,16 @@ function App() {
         <Route path="my-calendar" element={<MyCalendar />} />
       </Route>
       <Route path="/ai-planner" element={<AIPlanner />} />
+      <Route
+        path="/hotels"
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Hotels />} />
+      </Route>
       <Route path="/destination/:id" element={<DestinationDetails />} />
       <Route path="/account-settings" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
       <Route path="/careers" element={<Careers />} />
