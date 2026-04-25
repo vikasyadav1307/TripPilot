@@ -72,7 +72,7 @@ It combines:
 ![Home](./screenshots/home.png)
 
 ### 🤖 AI Planner
-![AI Planner](./screenshots/ai-planner.png)
+![AI Planner](./screenshots/ai_planner.png)
 
 ### 📊 Dashboard
 ![Dashboard](./screenshots/dashboard.png)
