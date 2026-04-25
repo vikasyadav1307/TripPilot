@@ -70,7 +70,7 @@ It combines:
 
 | Dashboard                        | AI Planner                     | Hotels                        |
 | -------------------------------- | ------------------------------ | ----------------------------- |
-| ![](./screenshots/dashboard.png) | ![](./screenshots/planner.png) | ![](./screenshots/hotels.png) |
+| ![](./screenshots/dashboard.png) | ![](./screenshots/ai_planner.png) | ![](./screenshots/hotel.png) |
 
 ---
 
