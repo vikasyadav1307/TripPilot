@@ -1,6 +1,5 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const navItems = [
   { label: "Home", to: "/", icon: "🏠", end: true },
@@ -21,11 +20,25 @@ const secondaryItems = [
 
 const Sidebar = () => {
   const navigate = useNavigate();
+  let user = null;
+
+  try {
+    const storedUser = localStorage.getItem("user");
+    user = storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    user = null;
+  }
+
+  const userName = user?.name?.trim() || "Guest";
+  const avatarLetter = user?.name?.trim()?.charAt(0)?.toUpperCase() || "U";
 
   const handleLogout = () => {
     try {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       sessionStorage.removeItem("currentUser");
       sessionStorage.removeItem("token");
+      window.dispatchEvent(new Event("user-auth-changed"));
     } catch {
       // Ignore storage errors and still redirect to home.
     }
@@ -43,10 +56,10 @@ const Sidebar = () => {
 
         <div className="flex items-center gap-3 rounded-2xl border border-teal-100 bg-teal-50/60 px-3 py-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-600 text-sm font-semibold text-white">
-            V
+            {avatarLetter}
           </div>
           <div>
-            <p className="text-sm font-semibold text-slate-700">Vikas</p>
+            <p className="text-sm font-semibold text-slate-700">{userName}</p>
             <p className="text-xs text-slate-500">Traveller</p>
           </div>
         </div>

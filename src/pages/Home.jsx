@@ -9,7 +9,8 @@ import LoginModal from '../components/LoginModal';
 const Home = () => {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const storedCurrentUser = sessionStorage.getItem('currentUser');
+      const storedCurrentUser =
+        localStorage.getItem('user') || sessionStorage.getItem('currentUser');
       return storedCurrentUser ? JSON.parse(storedCurrentUser) : null;
     } catch {
       return null;
@@ -21,15 +22,21 @@ const Home = () => {
   useEffect(() => {
     const syncCurrentUser = () => {
       try {
-        const storedCurrentUser = sessionStorage.getItem('currentUser');
+        const storedCurrentUser =
+          localStorage.getItem('user') || sessionStorage.getItem('currentUser');
         setCurrentUser(storedCurrentUser ? JSON.parse(storedCurrentUser) : null);
       } catch {
         setCurrentUser(null);
       }
     };
 
+    syncCurrentUser();
     window.addEventListener('storage', syncCurrentUser);
-    return () => window.removeEventListener('storage', syncCurrentUser);
+    window.addEventListener('user-auth-changed', syncCurrentUser);
+    return () => {
+      window.removeEventListener('storage', syncCurrentUser);
+      window.removeEventListener('user-auth-changed', syncCurrentUser);
+    };
   }, []);
 
   const openLoginModal = (mode = 'login') => {
@@ -39,8 +46,11 @@ const Home = () => {
 
   const handleLogout = () => {
     try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       sessionStorage.removeItem('currentUser');
       sessionStorage.removeItem('token');
+      window.dispatchEvent(new Event('user-auth-changed'));
     } catch {
       // Ignore storage cleanup errors and continue updating UI.
     }

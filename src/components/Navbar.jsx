@@ -11,7 +11,8 @@ const Navbar = () => {
   useEffect(() => {
     const syncCurrentUser = () => {
       try {
-        const storedCurrentUser = sessionStorage.getItem('currentUser');
+        const storedCurrentUser =
+          localStorage.getItem('user') || sessionStorage.getItem('currentUser');
         setCurrentUser(storedCurrentUser ? JSON.parse(storedCurrentUser) : null);
       } catch {
         setCurrentUser(null);
@@ -20,9 +21,11 @@ const Navbar = () => {
 
     syncCurrentUser();
     window.addEventListener('storage', syncCurrentUser);
+    window.addEventListener('user-auth-changed', syncCurrentUser);
 
     return () => {
       window.removeEventListener('storage', syncCurrentUser);
+      window.removeEventListener('user-auth-changed', syncCurrentUser);
     };
   }, []);
 
@@ -60,8 +63,11 @@ const Navbar = () => {
 
   const handleLogout = () => {
     try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       sessionStorage.removeItem('currentUser');
       sessionStorage.removeItem('token');
+      window.dispatchEvent(new Event('user-auth-changed'));
     } catch {
       // Ignore storage cleanup failures and continue with redirect.
     }

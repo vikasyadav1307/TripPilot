@@ -1,7 +1,6 @@
 /* eslint-disable no-undef */
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const mongoose = require('mongoose');
 const User = require('../models/User');
 
 const generateToken = (user) => {
@@ -86,11 +85,15 @@ const login = async (req, res) => {
 };
 
 const updatePassword = async (req, res) => {
-  const { userId, email, currentPassword, newPassword } = req.body;
-  console.log('update-password payload:', req.body);
+  console.log('API HIT');
+  const { currentPassword, newPassword } = req.body;
 
-  if ((!userId && !email) || !currentPassword || !newPassword) {
-    return res.status(400).json({ message: 'userId/email, currentPassword, and newPassword are required' });
+  if (!req.user?.id) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'currentPassword and newPassword are required' });
   }
 
   if (newPassword.length < 6) {
@@ -98,20 +101,7 @@ const updatePassword = async (req, res) => {
   }
 
   try {
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-    const hasValidUserId = typeof userId === 'string' && mongoose.Types.ObjectId.isValid(userId);
-
-    const lookup = hasValidUserId
-      ? { _id: userId }
-      : normalizedEmail
-        ? { email: normalizedEmail }
-        : null;
-
-    if (!lookup) {
-      return res.status(400).json({ message: 'Provide a valid userId or email' });
-    }
-
-    const user = await User.findOne(lookup);
+    const user = await User.findById(req.user.id);
 
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
@@ -120,7 +110,7 @@ const updatePassword = async (req, res) => {
     const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
 
     if (!isCurrentPasswordValid) {
-      return res.status(401).json({ message: 'Incorrect current password' });
+      return res.status(400).json({ message: 'Incorrect current password' });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);

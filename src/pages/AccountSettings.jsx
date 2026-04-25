@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const travelChips = ['Adventure', 'Food', 'Relaxation', 'Culture', 'Nightlife'];
@@ -11,7 +12,7 @@ const currencyOptions = [
 
 const getCurrentUser = () => {
   try {
-    const raw = sessionStorage.getItem('currentUser');
+    const raw = localStorage.getItem('user');
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -29,9 +30,9 @@ const getStoredSettings = () => {
 
 const buildDefaultSettings = (user) => ({
   profile: {
-    name: user?.name || 'Vikas Yadav',
-    email: user?.email || 'vikas@trippilot.com',
-    bio: 'Frequent traveller crafting memorable itineraries with TripPilot.',
+    name: user?.name || 'Guest',
+    email: user?.email || '',
+    bio: user?.bio || 'Traveller using TripPilot',
     photo: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=400&q=60',
   },
   preferences: {
@@ -53,12 +54,21 @@ const buildDefaultSettings = (user) => ({
 
 const AccountSettings = () => {
   const navigate = useNavigate();
-  const currentUser = useMemo(() => getCurrentUser(), []);
+  const [currentUser, setCurrentUser] = useState(() => getCurrentUser());
+  const [formData, setFormData] = useState(() => ({
+    name: currentUser?.name || '',
+    email: currentUser?.email || '',
+    bio: currentUser?.bio || '',
+  }));
   const [settings, setSettings] = useState(() => {
     const stored = getStoredSettings();
     return stored || buildDefaultSettings(currentUser);
   });
-  const [securityForm, setSecurityForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
   const [toast, setToast] = useState(null);
   const [sectionSaving, setSectionSaving] = useState({
     profile: false,
@@ -68,6 +78,7 @@ const AccountSettings = () => {
     travel: false,
   });
   const fileInputRef = useRef(null);
+  const avatarLetter = formData.name?.trim()?.charAt(0)?.toUpperCase() || 'U';
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -76,31 +87,37 @@ const AccountSettings = () => {
   }, [toast]);
 
   useEffect(() => {
-    if (!currentUser?.email) {
-      return;
-    }
-    setSettings((prev) => {
-      if (prev.profile.email === currentUser.email) {
-        return prev;
-      }
-      return {
+    const syncUser = () => {
+      const nextUser = getCurrentUser();
+      setCurrentUser(nextUser);
+      setFormData({
+        name: nextUser?.name || '',
+        email: nextUser?.email || '',
+        bio: nextUser?.bio || '',
+      });
+      setSettings((prev) => ({
         ...prev,
         profile: {
           ...prev.profile,
-          email: currentUser.email,
+          name: nextUser?.name || 'Guest',
+          email: nextUser?.email || '',
+          bio: nextUser?.bio || 'Traveller using TripPilot',
         },
-      };
-    });
-  }, [currentUser?.email]);
+      }));
+    };
 
-  const handleProfileChange = (field, value) => {
-    setSettings((prev) => ({
-      ...prev,
-      profile: {
-        ...prev.profile,
-        [field]: value,
-      },
-    }));
+    window.addEventListener('storage', syncUser);
+    window.addEventListener('user-auth-changed', syncUser);
+
+    return () => {
+      window.removeEventListener('storage', syncUser);
+      window.removeEventListener('user-auth-changed', syncUser);
+    };
+  }, []);
+
+  const handleProfileChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handlePreferenceChange = (field, value) => {
@@ -152,16 +169,22 @@ const AccountSettings = () => {
     handlePreferenceChange('budgetLevel', level);
   };
 
-  const handleInputChange = (event) => {
+  const handlePasswordChange = (event) => {
     const { name, value } = event.target;
-    setSecurityForm((prev) => ({ ...prev, [name]: value }));
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleAvatarChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     const localUrl = URL.createObjectURL(file);
-    handleProfileChange('photo', localUrl);
+    setSettings((prev) => ({
+      ...prev,
+      profile: {
+        ...prev.profile,
+        photo: localUrl,
+      },
+    }));
   };
 
   const persistSection = (sectionName, sectionKey, sectionValue, successMessage) => {
@@ -185,7 +208,31 @@ const AccountSettings = () => {
   };
 
   const handleProfileSave = () => {
-    persistSection('profile', 'profile', settings.profile, 'Profile updated successfully.');
+    const nextProfile = {
+      ...settings.profile,
+      name: formData.name,
+      email: formData.email,
+      bio: formData.bio,
+    };
+
+    try {
+      const nextUser = {
+        ...(currentUser || {}),
+        name: formData.name,
+        email: formData.email,
+        bio: formData.bio,
+      };
+      localStorage.setItem('user', JSON.stringify(nextUser));
+      window.dispatchEvent(new Event('user-auth-changed'));
+    } catch {
+      // Ignore user storage failures and still try to persist settings.
+    }
+
+    setSettings((prev) => ({
+      ...prev,
+      profile: nextProfile,
+    }));
+    persistSection('profile', 'profile', nextProfile, 'Profile updated successfully.');
   };
 
   const handlePreferencesSave = () => {
@@ -196,10 +243,12 @@ const AccountSettings = () => {
     persistSection('notifications', 'notifications', settings.notifications, 'Notification settings saved.');
   };
 
-  const handleSecuritySave = async () => {
+  const handleUpdatePassword = async () => {
     if (sectionSaving.security) return;
 
-    const { currentPassword, newPassword, confirmPassword } = securityForm;
+    console.log('Update clicked');
+
+    const { currentPassword, newPassword, confirmPassword } = passwordData;
     if (!currentPassword || !newPassword || !confirmPassword) {
       setToast({ type: 'error', message: 'Please fill in all password fields.' });
       return;
@@ -215,35 +264,24 @@ const AccountSettings = () => {
       return;
     }
 
-    const payload = {
-      email: (currentUser?.email || settings.profile.email || '').toLowerCase(),
-      currentPassword,
-      newPassword,
-    };
-
-    console.log({
-      email: payload.email,
-      currentPassword: payload.currentPassword,
-      newPassword: payload.newPassword,
-    });
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setToast({ type: 'error', message: 'Please log in again to update your password.' });
+      return;
+    }
 
     setSectionSaving((prev) => ({ ...prev, security: true }));
     try {
-      const response = await fetch('/api/auth/update-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        console.log('update-password error response:', data);
-        setToast({ type: 'error', message: data.message || 'Unable to update password.' });
-        return;
-      }
+      await axios.post(
+        'http://localhost:5000/api/update-password',
+        { currentPassword, newPassword },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log('Response: Password updated successfully');
 
       // Persist security preferences (like 2FA) alongside successful password update.
       const stored = getStoredSettings() || buildDefaultSettings(currentUser);
@@ -256,8 +294,9 @@ const AccountSettings = () => {
       );
 
       setToast({ type: 'success', message: 'Password updated successfully' });
-      setSecurityForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch {
+      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (error) {
+      console.error('update-password failed:', error);
       setToast({ type: 'error', message: 'Server error while updating password.' });
     } finally {
       setSectionSaving((prev) => ({ ...prev, security: false }));
@@ -276,7 +315,9 @@ const AccountSettings = () => {
     try {
       sessionStorage.removeItem('currentUser');
       sessionStorage.removeItem('token');
+      localStorage.removeItem('token');
       localStorage.removeItem('user');
+      window.dispatchEvent(new Event('user-auth-changed'));
     } catch {
       // Ignore storage errors and continue navigation.
     }
@@ -707,9 +748,15 @@ const AccountSettings = () => {
           <div className="as-grid">
             <SettingsCard title="Profile" description="Update how you appear across TripPilot." tone="profile">
               <div className="as-avatar-row">
-                <img src={settings.profile.photo} alt={settings.profile.name} className="as-avatar" />
+                {settings.profile.photo ? (
+                  <img src={settings.profile.photo} alt={formData.name || 'Guest'} className="as-avatar" />
+                ) : (
+                  <div className="as-avatar flex items-center justify-center bg-emerald-500 text-xl font-semibold text-white">
+                    {avatarLetter}
+                  </div>
+                )}
                 <div className="as-avatar-meta">
-                  <p className="as-avatar-name">{settings.profile.name}</p>
+                  <p className="as-avatar-name">{formData.name || 'Guest'}</p>
                   <Button type="button" onClick={triggerAvatarUpload}>Change Photo</Button>
                   <input
                     type="file"
@@ -723,14 +770,16 @@ const AccountSettings = () => {
 
               <InputField
                 label="Full Name"
-                value={settings.profile.name}
-                onChange={(event) => handleProfileChange('name', event.target.value)}
+                name="name"
+                value={formData.name}
+                onChange={handleProfileChange}
                 placeholder="Your full name"
               />
               <InputField
                 label="Email"
                 type="email"
-                value={settings.profile.email}
+                name="email"
+                value={formData.email}
                 placeholder="you@trippilot.com"
                 readOnly
               />
@@ -738,8 +787,9 @@ const AccountSettings = () => {
                 label="Bio"
                 textarea
                 rows={3}
-                value={settings.profile.bio}
-                onChange={(event) => handleProfileChange('bio', event.target.value)}
+                name="bio"
+                value={formData.bio}
+                onChange={handleProfileChange}
                 placeholder="Tell travellers about your style"
               />
               <div className="as-card-actions">
@@ -759,28 +809,28 @@ const AccountSettings = () => {
                 label="Current Password"
                 type="password"
                 name="currentPassword"
-                value={securityForm.currentPassword}
-                onChange={handleInputChange}
+                value={passwordData.currentPassword}
+                onChange={handlePasswordChange}
                 placeholder="••••••••"
               />
               <InputField
                 label="New Password"
                 type="password"
                 name="newPassword"
-                value={securityForm.newPassword}
-                onChange={handleInputChange}
+                value={passwordData.newPassword}
+                onChange={handlePasswordChange}
                 placeholder="Create a strong password"
               />
               <InputField
                 label="Confirm Password"
                 type="password"
                 name="confirmPassword"
-                value={securityForm.confirmPassword}
-                onChange={handleInputChange}
+                value={passwordData.confirmPassword}
+                onChange={handlePasswordChange}
                 placeholder="Repeat new password"
               />
               <div className="as-card-actions">
-                <Button type="button" onClick={handleSecuritySave} disabled={sectionSaving.security}>
+                <Button type="button" onClick={handleUpdatePassword} disabled={sectionSaving.security}>
                   {sectionSaving.security ? 'Updating...' : 'Update Password'}
                 </Button>
               </div>

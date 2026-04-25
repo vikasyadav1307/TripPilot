@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 const LoginModal = ({ onClose, mode = 'login', onAuthSuccess }) => {
@@ -142,7 +143,7 @@ const LoginModal = ({ onClose, mode = 'login', onAuthSuccess }) => {
     }
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     const trimmedEmail = formData.email.trim().toLowerCase();
     const password = formData.password;
 
@@ -155,6 +156,40 @@ const LoginModal = ({ onClose, mode = 'login', onAuthSuccess }) => {
 
     if (!password) {
       setErrorMessage('Password should not be empty.');
+      return;
+    }
+
+    let backendUser = null;
+    let backendToken = null;
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', {
+        email: trimmedEmail,
+        password,
+      });
+      backendUser = response?.data?.user || null;
+      backendToken = response?.data?.token || null;
+    } catch (error) {
+      console.error('login api failed:', error);
+    }
+
+    if (backendToken || backendUser) {
+      const loggedInUser = {
+        name: backendUser?.name || trimmedEmail.split('@')[0],
+        email: backendUser?.email || trimmedEmail,
+      };
+      if (backendToken) {
+        localStorage.setItem('token', backendToken);
+        sessionStorage.setItem('token', backendToken);
+      }
+      localStorage.setItem('user', JSON.stringify(loggedInUser));
+      sessionStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+      window.dispatchEvent(new Event('user-auth-changed'));
+      if (onAuthSuccess) {
+        onAuthSuccess(loggedInUser);
+      }
+      navigate('/dashboard');
+      onClose();
       return;
     }
 
@@ -181,7 +216,9 @@ const LoginModal = ({ onClose, mode = 'login', onAuthSuccess }) => {
       }
 
       const loggedInUser = { name: user.name, email: user.email };
+      localStorage.setItem('user', JSON.stringify(loggedInUser));
       sessionStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+      window.dispatchEvent(new Event('user-auth-changed'));
       if (onAuthSuccess) {
         onAuthSuccess(loggedInUser);
       }

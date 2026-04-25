@@ -389,13 +389,13 @@ const AIPlanner = () => {
 
   const currentUser = useMemo(() => {
     try {
-      const raw = sessionStorage.getItem('currentUser');
-      if (!raw) {
-        return { name: 'Traveler', email: '' };
-      }
-
-      const parsed = JSON.parse(raw);
-      return parsed?.name ? parsed : { name: 'Traveler', email: '' };
+      const raw = localStorage.getItem('user') || sessionStorage.getItem('currentUser');
+      const parsed = raw ? JSON.parse(raw) : null;
+      const safeUser = parsed || {};
+      return {
+        name: safeUser.name || 'Traveler',
+        email: safeUser.email || '',
+      };
     } catch {
       return { name: 'Traveler', email: '' };
     }
@@ -532,6 +532,8 @@ const AIPlanner = () => {
 
   const handleLogout = () => {
     try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       sessionStorage.removeItem('currentUser');
       sessionStorage.removeItem('token');
     } catch {
@@ -1018,9 +1020,9 @@ const AIPlanner = () => {
 
         <aside className={`ai-sidebar ${sidebarOpen ? 'open' : ''}`}>
           <div className="ai-profile">
-            <div className="ai-avatar">{currentUser.name.charAt(0).toUpperCase()}</div>
+            <div className="ai-avatar">{currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}</div>
             <div>
-              <strong style={{ color: '#0f172a' }}>{currentUser.name}</strong>
+              <strong style={{ color: '#0f172a' }}>{currentUser?.name || 'Traveler'}</strong>
               <div style={{ color: '#64748b', fontSize: '0.82rem' }}>AI Co-Traveler</div>
             </div>
           </div>

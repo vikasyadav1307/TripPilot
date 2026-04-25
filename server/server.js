@@ -8,6 +8,8 @@ const { connectDB } = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const tripPlannerRoutes = require('./routes/tripPlannerRoutes');
 const tripsRoutes = require('./routes/tripsRoutes');
+const { authenticate } = require('./middleware/authMiddleware');
+const { updatePassword } = require('./controllers/authController');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +22,7 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.post('/api/update-password', authenticate, updatePassword);
 app.use('/api', tripPlannerRoutes);
 app.use('/api/trips', tripsRoutes);
 
