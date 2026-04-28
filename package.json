@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build-all": "npm run build && cd server && npm install && cd ..",
+    "deploy": "npm run build-all"
   },
   "dependencies": {
     "@google/genai": "^1.46.0",

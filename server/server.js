@@ -57,6 +57,15 @@ Tips:
   res.json({ result: text });
 });
 
+// Serve static files from the frontend build
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// SPA fallback: serve index.html for all non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
+
 // For now this project is focused on a local chatbot.
 // You can later add AI API routes again when needed.
 connectDB()
