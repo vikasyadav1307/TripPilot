@@ -1,6 +1,7 @@
 /* eslint-env node */
 /* eslint-disable no-undef */
 require('dotenv').config();
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { connectDB } = require('./config/db');
@@ -58,7 +59,6 @@ Tips:
 });
 
 // Serve static files from the frontend build
-const path = require('path');
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // SPA fallback: serve index.html for all non-API routes

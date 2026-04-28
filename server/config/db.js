@@ -2,17 +2,18 @@
 /* eslint-disable no-undef */
 const { neon } = require('@neondatabase/serverless');
 
-const databaseUrl = process.env.NETLIFY_DATABASE_URL;
+// Support multiple database configurations for different deployment platforms
+const databaseUrl = process.env.NETLIFY_DATABASE_URL || process.env.DATABASE_URL || process.env.MONGODB_URI;
 
 if (!databaseUrl) {
-  console.warn('NETLIFY_DATABASE_URL is not set. Database requests will fail until configured.');
+  console.warn('Database URL is not set. Set one of: NETLIFY_DATABASE_URL, DATABASE_URL, or MONGODB_URI');
 }
 
 const sql = databaseUrl ? neon(databaseUrl) : null;
 
 const ensureTripsTable = async () => {
   if (!sql) {
-    throw new Error('NETLIFY_DATABASE_URL is not defined in environment variables');
+    throw new Error('Database URL is not defined in environment variables');
   }
 
   await sql`
@@ -28,7 +29,7 @@ const ensureTripsTable = async () => {
 
 const connectDB = async () => {
   if (!sql) {
-    throw new Error('NETLIFY_DATABASE_URL is not defined in environment variables');
+    throw new Error('Database URL is not defined in environment variables. Set NETLIFY_DATABASE_URL, DATABASE_URL, or MONGODB_URI');
   }
 
   try {
@@ -36,7 +37,7 @@ const connectDB = async () => {
     await ensureTripsTable();
     console.log('Neon PostgreSQL connected successfully');
   } catch (error) {
-    console.error('Neon PostgreSQL connection error:', error.message);
+    console.error('Database connection error:', error.message);
     throw error;
   }
 };
