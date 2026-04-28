@@ -66,11 +66,19 @@ It combines:
 
 ## 📸 Screenshots
 
-> *(Add real images in `/screenshots` folder for best impact)*
+## 📸 Screenshots
 
-| Dashboard                        | AI Planner                     | Hotels                        |
-| -------------------------------- | ------------------------------ | ----------------------------- |
-| ![](./screenshots/dashboard.png) | ![](./screenshots/planner.png) | ![](./screenshots/hotels.png) |
+### 🏠 Home Page
+![Home](./screenshots/home.png)
+
+### 🤖 AI Planner
+![AI Planner](./screenshots/ai_planner.png)
+
+### 📊 Dashboard
+![Dashboard](./screenshots/dashboard.png)
+
+### 🏨 Hotels
+![Hotels](./screenshots/hotel.png)
 
 ---
 
